@@ -1,18 +1,18 @@
-export type Jenjang = 'SMP' | 'SMK';
+export type Level = 'Junior High' | 'Vocational High';
 
-export const jenjangOptions: Jenjang[] = ['SMP', 'SMK'];
+export const levelOptions: Level[] = ['Junior High', 'Vocational High'];
 
 interface AppData {
   [key: string]: {
-    kelas: string[];
-    guru: string[];
+    class: string[];
+    teacher: string[];
   };
 }
 
 export const data: AppData = {
-  SMP: {
-    kelas: ['Kelas 7A', 'Kelas 7B', 'Kelas 8A', 'Kelas 8B', 'Kelas 9A', 'Kelas 9B'],
-    guru: [
+  'Junior High': {
+    class: ['Class 7A', 'Class 7B', 'Class 8A', 'Class 8B', 'Class 9A', 'Class 9B'],
+    teacher: [
         'Adinda Eka Febrianti',
         'Anisa',
         'Anisah Nurul Azhar',
@@ -26,12 +26,12 @@ export const data: AppData = {
         'Khansa Meisastia',
         'Annisa Rahayu',
         'Haura Salsabila Az-Zahra',
-        'Lainnya'
+        'Other'
     ],
   },
-  SMK: {
-    kelas: ['10 DKV', '10 RPL', '11 DKV', '11 RPL'],
-    guru: [
+  'Vocational High': {
+    class: ['10 DKV', '10 RPL', '11 DKV', '11 RPL'],
+    teacher: [
         'Wida Mudrikah',
         'Setianing Budi',
         'Mane Mint Dahi',
@@ -43,7 +43,7 @@ export const data: AppData = {
         'Tri Wahyu Nengsih',
         'Salwa',
         'Ratih Eldina',
-        'Lainnya'
+        'Other'
     ],
   },
 };

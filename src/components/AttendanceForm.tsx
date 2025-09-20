@@ -8,7 +8,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { submitAttendance } from "@/app/actions";
-import { data, jenjangOptions, type Jenjang } from "@/lib/data";
+import { data, levelOptions, type Level } from "@/lib/data";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -30,17 +30,17 @@ import { useToast } from "@/hooks/use-toast";
 import { Input } from "./ui/input";
 
 const formSchema = z.object({
-  jenjang: z.string({ required_error: "Please select a Jenjang." }).min(1),
-  kelas: z.string({ required_error: "Please select a Kelas." }).min(1),
-  guru: z.string({ required_error: "Please select a Nama Guru." }).min(1),
-  guruLainnya: z.string().optional(),
+  level: z.string({ required_error: "Please select a Level." }).min(1),
+  class: z.string({ required_error: "Please select a Class." }).min(1),
+  teacher: z.string({ required_error: "Please select a Teacher's Name." }).min(1),
+  otherTeacher: z.string().optional(),
   photo: z.string({ required_error: "Please take a photo." }).min(1),
 }).superRefine((data, ctx) => {
-    if (data.guru === 'Lainnya' && (!data.guruLainnya || data.guruLainnya.trim() === '')) {
+    if (data.teacher === 'Other' && (!data.otherTeacher || data.otherTeacher.trim() === '')) {
         ctx.addIssue({
             code: z.ZodIssueCode.custom,
-            path: ['guruLainnya'],
-            message: 'Nama Guru harus diisi jika memilih "Lainnya".',
+            path: ['otherTeacher'],
+            message: 'Teacher name must be filled if "Other" is selected.',
         });
     }
 });
@@ -48,8 +48,8 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 export default function AttendanceForm() {
-  const [kelasOptions, setKelasOptions] = useState<string[]>([]);
-  const [guruOptions, setGuruOptions] = useState<string[]>([]);
+  const [classOptions, setClassOptions] = useState<string[]>([]);
+  const [teacherOptions, setTeacherOptions] = useState<string[]>([]);
   
   const [isCameraOn, setIsCameraOn] = useState(false);
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
@@ -61,30 +61,30 @@ export default function AttendanceForm() {
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      jenjang: "",
-      kelas: "",
-      guru: "",
-      guruLainnya: "",
+      level: "",
+      class: "",
+      teacher: "",
+      otherTeacher: "",
       photo: "",
     },
   });
 
-  const jenjang = form.watch("jenjang");
-  const guru = form.watch("guru");
+  const level = form.watch("level");
+  const teacher = form.watch("teacher");
 
   useEffect(() => {
-    if (jenjang) {
-      const selectedJenjangData = data[jenjang as Jenjang];
-      setKelasOptions(selectedJenjangData.kelas);
-      setGuruOptions(selectedJenjangData.guru);
-      form.resetField("kelas", { defaultValue: "" });
-      form.resetField("guru", { defaultValue: "" });
-      form.resetField("guruLainnya", { defaultValue: "" });
+    if (level) {
+      const selectedLevelData = data[level as Level];
+      setClassOptions(selectedLevelData.class);
+      setTeacherOptions(selectedLevelData.teacher);
+      form.resetField("class", { defaultValue: "" });
+      form.resetField("teacher", { defaultValue: "" });
+      form.resetField("otherTeacher", { defaultValue: "" });
     } else {
-      setKelasOptions([]);
-      setGuruOptions([]);
+      setClassOptions([]);
+      setTeacherOptions([]);
     }
-  }, [jenjang, form]);
+  }, [level, form]);
 
   const startCamera = async () => {
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
@@ -152,10 +152,10 @@ export default function AttendanceForm() {
   async function onSubmit(values: FormValues) {
     const submissionData = {
         ...values,
-        guru: values.guru === 'Lainnya' ? values.guruLainnya || '' : values.guru,
+        teacher: values.teacher === 'Other' ? values.otherTeacher || '' : values.teacher,
     };
-    // We don't need guruLainnya in the final submission
-    const { guruLainnya, ...finalData } = submissionData;
+    // We don't need otherTeacher in the final submission
+    const { otherTeacher, ...finalData } = submissionData;
 
     const result = await submitAttendance(finalData);
     if (result.success) {
@@ -182,16 +182,16 @@ export default function AttendanceForm() {
                 <div className="space-y-6">
                     <FormField
                         control={form.control}
-                        name="jenjang"
+                        name="level"
                         render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Jenjang</FormLabel>
+                            <FormLabel>Level</FormLabel>
                             <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl>
-                                <SelectTrigger><SelectValue placeholder="Pilih Jenjang" /></SelectTrigger>
+                                <SelectTrigger><SelectValue placeholder="Select Level" /></SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                                {jenjangOptions.map((option) => (
+                                {levelOptions.map((option) => (
                                 <SelectItem key={option} value={option}>{option}</SelectItem>
                                 ))}
                             </SelectContent>
@@ -203,16 +203,16 @@ export default function AttendanceForm() {
 
                     <FormField
                         control={form.control}
-                        name="kelas"
+                        name="class"
                         render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Kelas</FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value} disabled={!jenjang}>
+                            <FormLabel>Class</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value} disabled={!level}>
                             <FormControl>
-                                <SelectTrigger><SelectValue placeholder="Pilih Kelas" /></SelectTrigger>
+                                <SelectTrigger><SelectValue placeholder="Select Class" /></SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                                {kelasOptions.map((option) => (
+                                {classOptions.map((option) => (
                                 <SelectItem key={option} value={option}>{option}</SelectItem>
                                 ))}
                             </SelectContent>
@@ -224,21 +224,21 @@ export default function AttendanceForm() {
 
                     <FormField
                         control={form.control}
-                        name="guru"
+                        name="teacher"
                         render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Nama Guru</FormLabel>
+                            <FormLabel>Teacher's Name</FormLabel>
                             <Select onValueChange={(value) => {
                                 field.onChange(value);
-                                if (value !== 'Lainnya') {
-                                    form.setValue('guruLainnya', '');
+                                if (value !== 'Other') {
+                                    form.setValue('otherTeacher', '');
                                 }
-                            }} value={field.value} disabled={!jenjang}>
+                            }} value={field.value} disabled={!level}>
                             <FormControl>
-                                <SelectTrigger><SelectValue placeholder="Pilih Nama Guru" /></SelectTrigger>
+                                <SelectTrigger><SelectValue placeholder="Select Teacher's Name" /></SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                                {guruOptions.map((option) => (
+                                {teacherOptions.map((option) => (
                                 <SelectItem key={option} value={option}>{option}</SelectItem>
                                 ))}
                             </SelectContent>
@@ -248,15 +248,15 @@ export default function AttendanceForm() {
                         )}
                     />
 
-                    {guru === 'Lainnya' && (
+                    {teacher === 'Other' && (
                         <FormField
                             control={form.control}
-                            name="guruLainnya"
+                            name="otherTeacher"
                             render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Nama Guru Lainnya</FormLabel>
+                                <FormLabel>Other Teacher's Name</FormLabel>
                                 <FormControl>
-                                    <Input placeholder="Masukkan nama guru" {...field} />
+                                    <Input placeholder="Enter teacher's name" {...field} />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>

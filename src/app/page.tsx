@@ -14,7 +14,7 @@ export default function Home() {
             <CardHeader className="text-center">
               <CardTitle className="text-3xl font-headline tracking-tight">Teacher Attendance System</CardTitle>
               <CardDescription className="font-body text-base">
-                IDN Boarding School Akhwat
+                IDN Boarding School
               </CardDescription>
             </CardHeader>
             <CardContent>

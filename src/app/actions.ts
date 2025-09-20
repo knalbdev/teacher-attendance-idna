@@ -4,9 +4,9 @@
 import { z } from 'zod';
 
 const formSchema = z.object({
-  jenjang: z.string().min(1, 'Jenjang is required.'),
-  kelas: z.string().min(1, 'Kelas is required.'),
-  guru: z.string().min(1, 'Nama Guru is required.'),
+  level: z.string().min(1, 'Level is required.'),
+  class: z.string().min(1, 'Class is required.'),
+  teacher: z.string().min(1, 'Teacher Name is required.'),
   photo: z.string().min(1, 'Photo is required.'),
 });
 
@@ -23,7 +23,7 @@ export async function submitAttendance(data: AttendanceData): Promise<{ success:
     };
   }
 
-  // TODO: Ganti dengan URL webhook n8n Anda di file .env.local
+  // TODO: Replace with your n8n webhook URL in your .env.local file
   const webhookUrl = process.env.N8N_WEBHOOK_URL;
 
   if (!webhookUrl) {

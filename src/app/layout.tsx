@@ -3,8 +3,8 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
-  title: 'TAS Akhwat',
-  description: 'Teacher Attendance System - IDN Boarding School Akhwat',
+  title: 'Teacher Attendance System',
+  description: 'Teacher Attendance System - IDN Boarding School',
 };
 
 export default function RootLayout({
