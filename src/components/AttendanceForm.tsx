@@ -38,6 +38,7 @@ const formSchema = z.object({
 
 export default function AttendanceForm() {
   const [kelasOptions, setKelasOptions] = useState<string[]>([]);
+  const [guruOptions, setGuruOptions] = useState<string[]>([]);
   
   const [isCameraOn, setIsCameraOn] = useState(false);
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
@@ -62,10 +63,12 @@ export default function AttendanceForm() {
     if (jenjang) {
       const selectedJenjangData = data[jenjang as Jenjang];
       setKelasOptions(selectedJenjangData.kelas);
+      setGuruOptions(selectedJenjangData.guru);
       form.resetField("kelas", { defaultValue: "" });
       form.resetField("guru", { defaultValue: "" });
     } else {
       setKelasOptions([]);
+      setGuruOptions([]);
     }
   }, [jenjang, form]);
 
@@ -202,9 +205,16 @@ export default function AttendanceForm() {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Nama Guru</FormLabel>
-                <FormControl>
-                  <Input placeholder="Masukkan Nama Guru" {...field} disabled={!jenjang} />
-                </FormControl>
+                 <Select onValueChange={field.onChange} value={field.value} disabled={!jenjang}>
+                  <FormControl>
+                    <SelectTrigger><SelectValue placeholder="Pilih Nama Guru" /></SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {guruOptions.map((option) => (
+                      <SelectItem key={option} value={option}>{option}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <FormMessage />
               </FormItem>
             )}
