@@ -121,7 +121,7 @@ export default function AttendanceForm() {
     if (level) {
       const selectedLevelData = data[level as Level];
       setClassOptions(selectedLevelData.class);
-      setTeacherOptions([...selectedLevelData.teacher, 'Other']);
+      setTeacherOptions([...selectedLevelData.teacher]);
       form.resetField("class", { defaultValue: "" });
       form.resetField("teacher", { defaultValue: "" });
       form.resetField("otherTeacher", { defaultValue: "" });
@@ -287,17 +287,22 @@ export default function AttendanceForm() {
                         <FormItem className="flex flex-col h-full">
                             <FormLabel>Attendance Photo</FormLabel>
                             <FormControl className="flex-grow">
-                                <div className="w-full h-full p-2 border-dashed border-2 rounded-lg flex items-center justify-center bg-muted/50 aspect-video relative">
+                                <div className="w-full p-2 border-dashed border-2 rounded-lg flex items-center justify-center bg-muted/50 aspect-video relative">
                                     {photo ? (
-                                        <div className="relative w-full">
-                                            <img src={photo} alt="Attendance" className="rounded-md w-full" />
+                                        <div className="relative w-full aspect-video">
+                                            <img src={photo} alt="Attendance" className="rounded-md w-full h-full object-cover" />
                                             <Button type="button" size="icon" variant="destructive" className="absolute -top-3 -right-3 rounded-full shadow-lg" onClick={retakePhoto}>
                                                 <RefreshCw className="h-4 w-4" />
                                             </Button>
                                         </div>
                                     ) : (
                                         <>
-                                            <video ref={videoRef} autoPlay playsInline muted className={`w-full h-full object-cover rounded-md ${!isCameraOn ? 'hidden' : ''}`} />
+                                            <div className={`w-full h-full relative ${!isCameraOn ? 'hidden' : 'block'}`}>
+                                                <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover rounded-md" />
+                                                <Button type="button" onClick={capturePhoto} className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10">
+                                                    <Camera className="mr-2 h-4 w-4" /> Capture
+                                                </Button>
+                                            </div>
                                             <div className={`absolute inset-0 flex flex-col gap-4 items-center justify-center ${isCameraOn ? 'hidden' : ''}`}>
                                                 <Button type="button" variant="outline" onClick={startCamera} disabled={isCameraStarting}>
                                                     {isCameraStarting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Camera className="mr-2 h-4 w-4" />}
@@ -312,11 +317,6 @@ export default function AttendanceForm() {
                                                     </Alert>
                                                 )}
                                             </div>
-                                            {isCameraOn && (
-                                                <Button type="button" onClick={capturePhoto} className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10">
-                                                    <Camera className="mr-2 h-4 w-4" /> Capture
-                                                </Button>
-                                            )}
                                         </>
                                     )}
                                     <canvas ref={canvasRef} className="hidden" />
