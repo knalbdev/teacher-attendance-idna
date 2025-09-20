@@ -23,7 +23,13 @@ export async function submitAttendance(data: AttendanceData): Promise<{ success:
     };
   }
 
-  const webhookUrl = process.env.N8N_WEBHOOK_URL || 'https://webhook.site/b17a151b-2546-4702-8610-c97b819d43d5'; // Placeholder
+  // TODO: Ganti dengan URL webhook n8n Anda di file .env.local
+  const webhookUrl = process.env.N8N_WEBHOOK_URL;
+
+  if (!webhookUrl) {
+    console.error('N8N_WEBHOOK_URL is not set.');
+    return { success: false, message: 'Webhook URL is not configured.' };
+  }
 
   try {
     const response = await fetch(webhookUrl, {
