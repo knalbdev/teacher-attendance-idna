@@ -30,9 +30,9 @@ import { useToast } from "@/hooks/use-toast";
 import { Input } from "./ui/input";
 
 const formSchema = z.object({
-  level: z.string({ required_error: "Grade is required." }).min(1, "This field is required."),
-  class: z.string({ required_error: "Class is required." }).min(1, "This field is required."),
-  teacher: z.string({ required_error: "Teacher's Name is required." }).min(1, "This field is required."),
+  level: z.string({ required_error: "This field is required." }).min(1, "This field is required."),
+  class: z.string({ required_error: "This field is required." }).min(1, "This field is required."),
+  teacher: z.string({ required_error: "This field is required." }).min(1, "This field is required."),
   otherTeacher: z.string().optional(),
   photo: z.string({ required_error: "A photo is required." }).min(1, "A photo is required."),
 }).superRefine((data, ctx) => {
@@ -287,7 +287,7 @@ export default function AttendanceForm() {
                         <FormItem className="flex flex-col h-full">
                             <FormLabel>Attendance Photo</FormLabel>
                             <FormControl className="flex-grow">
-                                <div className="w-full h-full p-2 border-dashed border-2 rounded-lg flex flex-col items-center justify-center bg-muted/50 aspect-video">
+                                <div className="w-full h-full p-2 border-dashed border-2 rounded-lg flex items-center justify-center bg-muted/50 aspect-video relative">
                                     {photo ? (
                                         <div className="relative w-full">
                                             <img src={photo} alt="Attendance" className="rounded-md w-full" />
@@ -296,28 +296,28 @@ export default function AttendanceForm() {
                                             </Button>
                                         </div>
                                     ) : (
-                                        <div className="w-full h-full flex flex-col items-center justify-center">
-                                            <div className="w-full relative flex-grow flex items-center justify-center">
-                                                <video ref={videoRef} autoPlay playsInline muted className={`w-full h-full object-cover rounded-md ${!isCameraOn ? 'hidden' : ''}`} />
-                                                <div className={`absolute inset-0 flex flex-col gap-4 items-center justify-center ${isCameraOn ? 'hidden' : ''}`}>
-                                                    <Button type="button" variant="outline" onClick={startCamera} disabled={isCameraStarting}>
-                                                      {isCameraStarting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Camera className="mr-2 h-4 w-4" />}
-                                                      Enable Camera
-                                                    </Button>
-                                                    {hasCameraPermission === false && (
-                                                        <Alert variant="destructive">
-                                                            <AlertTitle>Camera Access Denied</AlertTitle>
-                                                            <AlertDescription>
-                                                                Please enable camera permissions in your browser settings.
-                                                            </AlertDescription>
-                                                        </Alert>
-                                                    )}
-                                                </div>
+                                        <>
+                                            <video ref={videoRef} autoPlay playsInline muted className={`w-full h-full object-cover rounded-md ${!isCameraOn ? 'hidden' : ''}`} />
+                                            <div className={`absolute inset-0 flex flex-col gap-4 items-center justify-center ${isCameraOn ? 'hidden' : ''}`}>
+                                                <Button type="button" variant="outline" onClick={startCamera} disabled={isCameraStarting}>
+                                                    {isCameraStarting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Camera className="mr-2 h-4 w-4" />}
+                                                    Enable Camera
+                                                </Button>
+                                                {hasCameraPermission === false && (
+                                                    <Alert variant="destructive">
+                                                        <AlertTitle>Camera Access Denied</AlertTitle>
+                                                        <AlertDescription>
+                                                            Please enable camera permissions in your browser settings.
+                                                        </AlertDescription>
+                                                    </Alert>
+                                                )}
                                             </div>
                                             {isCameraOn && (
-                                                <Button type="button" onClick={capturePhoto} className="mt-2 shrink-0"><Camera className="mr-2 h-4 w-4" /> Capture</Button>
+                                                <Button type="button" onClick={capturePhoto} className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10">
+                                                    <Camera className="mr-2 h-4 w-4" /> Capture
+                                                </Button>
                                             )}
-                                        </div>
+                                        </>
                                     )}
                                     <canvas ref={canvasRef} className="hidden" />
                                 </div>
