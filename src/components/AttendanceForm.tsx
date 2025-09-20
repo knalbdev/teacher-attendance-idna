@@ -33,8 +33,19 @@ const formSchema = z.object({
   jenjang: z.string({ required_error: "Please select a Jenjang." }).min(1),
   kelas: z.string({ required_error: "Please select a Kelas." }).min(1),
   guru: z.string({ required_error: "Please select a Nama Guru." }).min(1),
+  guruLainnya: z.string().optional(),
   photo: z.string({ required_error: "Please take a photo." }).min(1),
+}).superRefine((data, ctx) => {
+    if (data.guru === 'Lainnya' && (!data.guruLainnya || data.guruLainnya.trim() === '')) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['guruLainnya'],
+            message: 'Nama Guru harus diisi jika memilih "Lainnya".',
+        });
+    }
 });
+
+type FormValues = z.infer<typeof formSchema>;
 
 export default function AttendanceForm() {
   const [kelasOptions, setKelasOptions] = useState<string[]>([]);
@@ -47,17 +58,19 @@ export default function AttendanceForm() {
 
   const { toast } = useToast();
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       jenjang: "",
       kelas: "",
       guru: "",
+      guruLainnya: "",
       photo: "",
     },
   });
 
   const jenjang = form.watch("jenjang");
+  const guru = form.watch("guru");
 
   useEffect(() => {
     if (jenjang) {
@@ -66,6 +79,7 @@ export default function AttendanceForm() {
       setGuruOptions(selectedJenjangData.guru);
       form.resetField("kelas", { defaultValue: "" });
       form.resetField("guru", { defaultValue: "" });
+      form.resetField("guruLainnya", { defaultValue: "" });
     } else {
       setKelasOptions([]);
       setGuruOptions([]);
@@ -135,8 +149,15 @@ export default function AttendanceForm() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    const result = await submitAttendance(values);
+  async function onSubmit(values: FormValues) {
+    const submissionData = {
+        ...values,
+        guru: values.guru === 'Lainnya' ? values.guruLainnya || '' : values.guru,
+    };
+    // We don't need guruLainnya in the final submission
+    const { guruLainnya, ...finalData } = submissionData;
+
+    const result = await submitAttendance(finalData);
     if (result.success) {
       toast({
         title: "Success!",
@@ -205,7 +226,12 @@ export default function AttendanceForm() {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Nama Guru</FormLabel>
-                 <Select onValueChange={field.onChange} value={field.value} disabled={!jenjang}>
+                 <Select onValueChange={(value) => {
+                    field.onChange(value);
+                    if (value !== 'Lainnya') {
+                        form.setValue('guruLainnya', '');
+                    }
+                 }} value={field.value} disabled={!jenjang}>
                   <FormControl>
                     <SelectTrigger><SelectValue placeholder="Pilih Nama Guru" /></SelectTrigger>
                   </FormControl>
@@ -219,6 +245,22 @@ export default function AttendanceForm() {
               </FormItem>
             )}
           />
+
+          {guru === 'Lainnya' && (
+             <FormField
+                control={form.control}
+                name="guruLainnya"
+                render={({ field }) => (
+                <FormItem>
+                    <FormLabel>Nama Guru Lainnya</FormLabel>
+                    <FormControl>
+                        <Input placeholder="Masukkan nama guru" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                </FormItem>
+                )}
+            />
+          )}
 
           <FormField
             control={form.control}

@@ -25,7 +25,8 @@ export const data: AppData = {
         'Tifany Fadianisah',
         'Khansa Meisastia',
         'Annisa Rahayu',
-        'Haura Salsabila Az-Zahra'
+        'Haura Salsabila Az-Zahra',
+        'Lainnya'
     ],
   },
   SMK: {
@@ -41,7 +42,8 @@ export const data: AppData = {
         'Ridha Mujahidah Fajri Islami',
         'Tri Wahyu Nengsih',
         'Salwa',
-        'Ratih Eldina'
+        'Ratih Eldina',
+        'Lainnya'
     ],
   },
 };
