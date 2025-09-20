@@ -15,7 +15,7 @@ export const data: AppData = {
     guru: ['Aisyah', 'Fatimah', 'Khadijah', 'Zainab'],
   },
   SMK: {
-    kelas: ['Kelas 10 RPL', 'Kelas 10 TKJ', 'Kelas 11 RPL', 'Kelas 11 TKJ', 'Kelas 12 RPL', 'Kelas 12 TKJ'],
-    guru: ['Siti', 'Maryam', 'Hafsah', 'Juwairiyah'],
+    kelas: ['10 DKV', '10 RPL', '11 DKV', '11 RPL'],
+    guru: [],
   },
 };

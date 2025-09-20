@@ -25,6 +25,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { Input } from "./ui/input";
 
 const formSchema = z.object({
   jenjang: z.string({ required_error: "Please select a Jenjang." }).min(1),
@@ -35,7 +36,6 @@ const formSchema = z.object({
 
 export default function AttendanceForm() {
   const [kelasOptions, setKelasOptions] = useState<string[]>([]);
-  const [guruOptions, setGuruOptions] = useState<string[]>([]);
   
   const [isCameraOn, setIsCameraOn] = useState(false);
   const [stream, setStream] = useState<MediaStream | null>(null);
@@ -60,12 +60,10 @@ export default function AttendanceForm() {
     if (jenjang) {
       const selectedJenjangData = data[jenjang as Jenjang];
       setKelasOptions(selectedJenjangData.kelas);
-      setGuruOptions(selectedJenjangData.guru);
       form.resetField("kelas", { defaultValue: "" });
       form.resetField("guru", { defaultValue: "" });
     } else {
       setKelasOptions([]);
-      setGuruOptions([]);
     }
   }, [jenjang, form]);
 
@@ -191,16 +189,9 @@ export default function AttendanceForm() {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Nama Guru</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value} disabled={!jenjang}>
-                  <FormControl>
-                    <SelectTrigger><SelectValue placeholder="Pilih Nama Guru" /></SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {guruOptions.map((option) => (
-                      <SelectItem key={option} value={option}>{option}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <FormControl>
+                  <Input placeholder="Masukkan Nama Guru" {...field} disabled={!jenjang} />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}
