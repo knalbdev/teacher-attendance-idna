@@ -1,3 +1,4 @@
+
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -8,6 +9,7 @@ import { z } from "zod";
 
 import { submitAttendance } from "@/app/actions";
 import { data, jenjangOptions, type Jenjang } from "@/lib/data";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -38,7 +40,7 @@ export default function AttendanceForm() {
   const [kelasOptions, setKelasOptions] = useState<string[]>([]);
   
   const [isCameraOn, setIsCameraOn] = useState(false);
-  const [stream, setStream] = useState<MediaStream | null>(null);
+  const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -68,29 +70,40 @@ export default function AttendanceForm() {
   }, [jenjang, form]);
 
   const startCamera = async () => {
-    try {
-      const mediaStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
-      setStream(mediaStream);
-      setIsCameraOn(true);
-      if (videoRef.current) {
-        videoRef.current.srcObject = mediaStream;
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+        setHasCameraPermission(true);
+        setIsCameraOn(true);
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+        }
+      } catch (err) {
+        console.error("Error accessing camera:", err);
+        setHasCameraPermission(false);
+        toast({
+          variant: "destructive",
+          title: "Camera Error",
+          description: "Could not access camera. Please enable permissions in your browser.",
+        });
       }
-    } catch (err) {
-      console.error("Error accessing camera:", err);
-      toast({
-        variant: "destructive",
-        title: "Camera Error",
-        description: "Could not access the camera. Please check permissions.",
-      });
+    } else {
+       setHasCameraPermission(false);
+       toast({
+          variant: "destructive",
+          title: "Camera Not Supported",
+          description: "Your browser does not support camera access.",
+        });
     }
   };
 
   const stopCamera = () => {
-    if (stream) {
+    if (videoRef.current && videoRef.current.srcObject) {
+      const stream = videoRef.current.srcObject as MediaStream;
       stream.getTracks().forEach(track => track.stop());
-      setStream(null);
-      setIsCameraOn(false);
+      videoRef.current.srcObject = null;
     }
+    setIsCameraOn(false);
   };
 
   const capturePhoto = () => {
@@ -214,13 +227,23 @@ export default function AttendanceForm() {
                             </div>
                         ) : isCameraOn ? (
                             <div className="w-full flex flex-col items-center gap-4">
-                                <video ref={videoRef} autoPlay playsInline className="w-full max-w-xs rounded-md" />
+                                <video ref={videoRef} autoPlay playsInline muted className="w-full max-w-xs rounded-md" />
                                 <Button type="button" onClick={capturePhoto}><Camera className="mr-2 h-4 w-4" /> Capture</Button>
                             </div>
                         ) : (
+                          <>
                             <Button type="button" variant="outline" onClick={startCamera}>
                                 <Camera className="mr-2 h-4 w-4" /> Enable Camera
                             </Button>
+                            {hasCameraPermission === false && (
+                                <Alert variant="destructive" className="mt-4">
+                                    <AlertTitle>Camera Access Denied</AlertTitle>
+                                    <AlertDescription>
+                                        Please enable camera permissions in your browser settings.
+                                    </AlertDescription>
+                                </Alert>
+                            )}
+                          </>
                         )}
                         <canvas ref={canvasRef} className="hidden" />
                     </div>
