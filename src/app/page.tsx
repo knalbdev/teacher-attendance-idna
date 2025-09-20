@@ -12,9 +12,9 @@ export default function Home() {
           </div>
           <Card className="shadow-xl rounded-2xl border">
             <CardHeader className="text-center">
-              <CardTitle className="text-3xl font-headline tracking-tight">TAS Akhwat</CardTitle>
+              <CardTitle className="text-3xl font-headline tracking-tight">Teacher Attendance System</CardTitle>
               <CardDescription className="font-body text-base">
-                Teacher Attendance System
+                TAS Akhwat
               </CardDescription>
             </CardHeader>
             <CardContent>
