@@ -1,6 +1,7 @@
-export type Level = 'Junior High' | 'Vocational High';
 
-export const levelOptions: Level[] = ['Junior High', 'Vocational High'];
+export type Level = 'SMP' | 'SMK';
+
+export const levelOptions: Level[] = ['SMP', 'SMK'];
 
 interface AppData {
   [key: string]: {
@@ -10,7 +11,7 @@ interface AppData {
 }
 
 export const data: AppData = {
-  'Junior High': {
+  'SMP': {
     class: ['Class 7A', 'Class 7B', 'Class 8A', 'Class 8B', 'Class 9A', 'Class 9B'],
     teacher: [
         'Adinda Eka Febrianti',
@@ -29,7 +30,7 @@ export const data: AppData = {
         'Other'
     ],
   },
-  'Vocational High': {
+  'SMK': {
     class: ['10 DKV', '10 RPL', '11 DKV', '11 RPL'],
     teacher: [
         'Wida Mudrikah',
