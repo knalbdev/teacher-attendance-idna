@@ -27,8 +27,10 @@ export async function submitAttendance(data: AttendanceData): Promise<{ success:
   const webhookUrl = process.env.N8N_WEBHOOK_URL;
 
   if (!webhookUrl) {
-    console.error('N8N_WEBHOOK_URL is not set.');
-    return { success: false, message: 'Webhook URL is not configured.' };
+    console.log('N8N_WEBHOOK_URL is not set. Simulating successful submission.');
+    // For demonstration purposes, we'll return a success message
+    // without actually sending the data to a webhook.
+    return { success: true, message: 'Attendance submitted successfully! (Simulated)' };
   }
 
   try {
