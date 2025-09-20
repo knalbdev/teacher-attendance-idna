@@ -4,7 +4,7 @@
 import { z } from 'zod';
 
 const formSchema = z.object({
-  level: z.string().min(1, 'Level is required.'),
+  level: z.string().min(1, 'Grade is required.'),
   class: z.string().min(1, 'Class is required.'),
   teacher: z.string().min(1, 'Teacher Name is required.'),
   photo: z.string().min(1, 'Photo is required.'),

@@ -30,7 +30,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Input } from "./ui/input";
 
 const formSchema = z.object({
-  level: z.string({ required_error: "Please select a Level." }).min(1),
+  level: z.string({ required_error: "Please select a Grade." }).min(1),
   class: z.string({ required_error: "Please select a Class." }).min(1),
   teacher: z.string({ required_error: "Please select a Teacher's Name." }).min(1),
   otherTeacher: z.string().optional(),
@@ -185,10 +185,10 @@ export default function AttendanceForm() {
                         name="level"
                         render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Level</FormLabel>
+                            <FormLabel>Grade</FormLabel>
                             <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl>
-                                <SelectTrigger><SelectValue placeholder="Select Level" /></SelectTrigger>
+                                <SelectTrigger><SelectValue placeholder="Select Grade" /></SelectTrigger>
                             </FormControl>
                             <SelectContent>
                                 {levelOptions.map((option) => (
