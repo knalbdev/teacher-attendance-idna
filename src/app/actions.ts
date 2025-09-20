@@ -23,13 +23,12 @@ export async function submitAttendance(data: AttendanceData): Promise<{ success:
     };
   }
 
-  // TODO: Replace with your n8n webhook URL in your .env.local file
+  // Pastikan Anda memiliki file .env.local dengan N8N_WEBHOOK_URL
   const webhookUrl = process.env.N8N_WEBHOOK_URL;
 
   if (!webhookUrl) {
     console.log('N8N_WEBHOOK_URL is not set. Simulating successful submission.');
-    // For demonstration purposes, we'll return a success message
-    // without actually sending the data to a webhook.
+    // Untuk pengembangan, jika webhook tidak ada, kita simulasi saja.
     return { success: true, message: 'Attendance submitted successfully! (Simulated)' };
   }
 
