@@ -8,7 +8,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { submitAttendance } from "@/app/actions";
-import { data, type Level, levelOptions } from "@/lib/data";
+import { data, type Level } from "@/lib/data";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -30,9 +30,9 @@ import { useToast } from "@/hooks/use-toast";
 import { Input } from "./ui/input";
 
 const formSchema = z.object({
-  level: z.string({ required_error: "Grade is required." }).min(1, "Grade is required."),
-  class: z.string({ required_error: "Class is required." }).min(1, "Class is required."),
-  teacher: z.string({ required_error: "Teacher's Name is required." }).min(1, "Teacher's Name is required."),
+  level: z.string({ required_error: "Grade is required." }).min(1, "This field is required."),
+  class: z.string({ required_error: "Class is required." }).min(1, "This field is required."),
+  teacher: z.string({ required_error: "Teacher's Name is required." }).min(1, "This field is required."),
   otherTeacher: z.string().optional(),
   photo: z.string({ required_error: "A photo is required." }).min(1, "A photo is required."),
 }).superRefine((data, ctx) => {
@@ -50,6 +50,7 @@ type FormValues = z.infer<typeof formSchema>;
 export default function AttendanceForm() {
   const [classOptions, setClassOptions] = useState<string[]>([]);
   const [teacherOptions, setTeacherOptions] = useState<string[]>([]);
+  const [levelOptions, setLevelOptions] = useState<string[]>([]);
   
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
   const [isCameraOn, setIsCameraOn] = useState(false);
@@ -73,6 +74,10 @@ export default function AttendanceForm() {
   const level = form.watch("level");
   const teacher = form.watch("teacher");
   const photo = form.watch("photo");
+
+  useEffect(() => {
+    setLevelOptions(Object.keys(data));
+  }, []);
 
   const stopCamera = useCallback(() => {
     if (videoRef.current && videoRef.current.srcObject) {
@@ -291,28 +296,26 @@ export default function AttendanceForm() {
                                             </Button>
                                         </div>
                                     ) : (
-                                        <div className="w-full h-full flex flex-col items-center justify-center gap-4">
+                                        <div className="w-full h-full flex flex-col items-center justify-center">
                                             <div className="w-full relative flex-grow flex items-center justify-center">
                                                 <video ref={videoRef} autoPlay playsInline muted className={`w-full h-full object-cover rounded-md ${!isCameraOn ? 'hidden' : ''}`} />
-                                                <div className={`absolute inset-0 flex items-center justify-center ${isCameraOn ? 'hidden' : ''}`}>
+                                                <div className={`absolute inset-0 flex flex-col gap-4 items-center justify-center ${isCameraOn ? 'hidden' : ''}`}>
                                                     <Button type="button" variant="outline" onClick={startCamera} disabled={isCameraStarting}>
                                                       {isCameraStarting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Camera className="mr-2 h-4 w-4" />}
                                                       Enable Camera
                                                     </Button>
+                                                    {hasCameraPermission === false && (
+                                                        <Alert variant="destructive">
+                                                            <AlertTitle>Camera Access Denied</AlertTitle>
+                                                            <AlertDescription>
+                                                                Please enable camera permissions in your browser settings.
+                                                            </AlertDescription>
+                                                        </Alert>
+                                                    )}
                                                 </div>
                                             </div>
-
-                                            {hasCameraPermission === false && (
-                                                 <Alert variant="destructive" className="mt-4">
-                                                    <AlertTitle>Camera Access Denied</AlertTitle>
-                                                    <AlertDescription>
-                                                        Please enable camera permissions in your browser settings.
-                                                    </AlertDescription>
-                                                </Alert>
-                                            )}
-
                                             {isCameraOn && (
-                                                <Button type="button" onClick={capturePhoto} className="mt-2"><Camera className="mr-2 h-4 w-4" /> Capture</Button>
+                                                <Button type="button" onClick={capturePhoto} className="mt-2 shrink-0"><Camera className="mr-2 h-4 w-4" /> Capture</Button>
                                             )}
                                         </div>
                                     )}
