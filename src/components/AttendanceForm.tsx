@@ -8,7 +8,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { submitAttendance } from "@/app/actions";
-import { data, levelOptions, type Level } from "@/lib/data";
+import { data, type Level, levelOptions } from "@/lib/data";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -51,8 +51,8 @@ export default function AttendanceForm() {
   const [classOptions, setClassOptions] = useState<string[]>([]);
   const [teacherOptions, setTeacherOptions] = useState<string[]>([]);
   
-  const [isCameraOn, setIsCameraOn] = useState(false);
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
+  const [isCameraStarting, setIsCameraStarting] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -71,6 +71,7 @@ export default function AttendanceForm() {
 
   const level = form.watch("level");
   const teacher = form.watch("teacher");
+  const photo = form.watch("photo");
 
   useEffect(() => {
     if (level) {
@@ -87,30 +88,27 @@ export default function AttendanceForm() {
   }, [level, form]);
 
   const startCamera = async () => {
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-      try {
+    if (isCameraStarting || (videoRef.current && videoRef.current.srcObject)) return;
+    setIsCameraStarting(true);
+
+    try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
         setHasCameraPermission(true);
-        setIsCameraOn(true);
         if (videoRef.current) {
-          videoRef.current.srcObject = stream;
+            videoRef.current.srcObject = stream;
+            videoRef.current.onloadedmetadata = () => {
+              setIsCameraStarting(false);
+            };
         }
-      } catch (err) {
+    } catch (err) {
         console.error("Error accessing camera:", err);
         setHasCameraPermission(false);
         toast({
-          variant: "destructive",
-          title: "Camera Error",
-          description: "Could not access camera. Please enable permissions in your browser.",
+            variant: "destructive",
+            title: "Camera Error",
+            description: "Could not access camera. Please enable permissions in your browser.",
         });
-      }
-    } else {
-       setHasCameraPermission(false);
-       toast({
-          variant: "destructive",
-          title: "Camera Not Supported",
-          description: "Your browser does not support camera access.",
-        });
+        setIsCameraStarting(false);
     }
   };
 
@@ -120,11 +118,10 @@ export default function AttendanceForm() {
       stream.getTracks().forEach(track => track.stop());
       videoRef.current.srcObject = null;
     }
-    setIsCameraOn(false);
   };
 
   const capturePhoto = () => {
-    if (videoRef.current && canvasRef.current) {
+    if (videoRef.current && canvasRef.current && videoRef.current.readyState >= 3) {
       const video = videoRef.current;
       const canvas = canvasRef.current;
       canvas.width = video.videoWidth;
@@ -134,15 +131,22 @@ export default function AttendanceForm() {
       const dataUrl = canvas.toDataURL("image/jpeg");
       form.setValue("photo", dataUrl, { shouldValidate: true });
       stopCamera();
+    } else {
+        toast({
+          variant: "destructive",
+          title: "Camera Not Ready",
+          description: "The camera is not ready yet. Please wait a moment and try again.",
+        });
     }
   };
 
   const retakePhoto = () => {
-    form.setValue("photo", "", { shouldValidate: false });
-    startCamera();
+    form.setValue("photo", "", { shouldValidate: true });
+    // No need to call startCamera() here, it will be handled by the button in the JSX
   };
 
   useEffect(() => {
+    // Cleanup function to stop camera when component unmounts
     return () => {
       stopCamera();
     };
@@ -173,6 +177,8 @@ export default function AttendanceForm() {
       });
     }
   }
+
+  const isCameraOn = videoRef.current?.srcObject !== null && videoRef.current?.srcObject !== undefined;
 
   return (
     <>
@@ -273,32 +279,38 @@ export default function AttendanceForm() {
                             <FormLabel>Attendance Photo</FormLabel>
                             <FormControl>
                                 <div className="w-full p-2 border-dashed border-2 rounded-lg flex flex-col items-center justify-center min-h-[200px] bg-muted/50 aspect-video">
-                                    {form.getValues("photo") ? (
+                                    {photo ? (
                                         <div className="relative w-full">
-                                            <img src={form.getValues("photo")} alt="Attendance" className="rounded-md w-full" />
+                                            <img src={photo} alt="Attendance" className="rounded-md w-full" />
                                             <Button type="button" size="icon" variant="destructive" className="absolute -top-3 -right-3 rounded-full shadow-lg" onClick={retakePhoto}>
                                                 <RefreshCw className="h-4 w-4" />
                                             </Button>
                                         </div>
-                                    ) : isCameraOn ? (
-                                        <div className="w-full flex flex-col items-center gap-4">
-                                            <video ref={videoRef} autoPlay playsInline muted className="w-full rounded-md" />
-                                            <Button type="button" onClick={capturePhoto}><Camera className="mr-2 h-4 w-4" /> Capture</Button>
-                                        </div>
                                     ) : (
-                                    <>
-                                        <Button type="button" variant="outline" onClick={startCamera}>
-                                            <Camera className="mr-2 h-4 w-4" /> Enable Camera
-                                        </Button>
-                                        {hasCameraPermission === false && (
-                                            <Alert variant="destructive" className="mt-4">
-                                                <AlertTitle>Camera Access Denied</AlertTitle>
-                                                <AlertDescription>
-                                                    Please enable camera permissions in your browser settings.
-                                                </AlertDescription>
-                                            </Alert>
-                                        )}
-                                    </>
+                                        <div className="w-full flex flex-col items-center justify-center gap-4">
+                                            <div className="w-full relative">
+                                                <video ref={videoRef} autoPlay playsInline muted className={`w-full rounded-md ${!isCameraOn ? 'hidden' : ''}`} />
+                                                <div className={`absolute inset-0 flex items-center justify-center ${isCameraOn ? 'hidden' : ''}`}>
+                                                    <Button type="button" variant="outline" onClick={startCamera} disabled={isCameraStarting}>
+                                                      {isCameraStarting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Camera className="mr-2 h-4 w-4" />}
+                                                      Enable Camera
+                                                    </Button>
+                                                </div>
+                                            </div>
+
+                                            {hasCameraPermission === false && (
+                                                 <Alert variant="destructive" className="mt-4">
+                                                    <AlertTitle>Camera Access Denied</AlertTitle>
+                                                    <AlertDescription>
+                                                        Please enable camera permissions in your browser settings.
+                                                    </AlertDescription>
+                                                </Alert>
+                                            )}
+
+                                            {isCameraOn && (
+                                                <Button type="button" onClick={capturePhoto}><Camera className="mr-2 h-4 w-4" /> Capture</Button>
+                                            )}
+                                        </div>
                                     )}
                                     <canvas ref={canvasRef} className="hidden" />
                                 </div>
@@ -319,3 +331,5 @@ export default function AttendanceForm() {
     </>
   );
 }
+
+    
