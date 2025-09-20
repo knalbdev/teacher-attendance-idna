@@ -19,16 +19,14 @@ export async function submitAttendance(data: AttendanceData): Promise<{ success:
   if (!validatedFields.success) {
     return {
       success: false,
-      message: 'Invalid data provided.',
+      message: 'Invalid data provided: ' + validatedFields.error.flatten().fieldErrors,
     };
   }
 
-  // Pastikan Anda memiliki file .env.local dengan N8N_WEBHOOK_URL
   const webhookUrl = process.env.N8N_WEBHOOK_URL;
 
   if (!webhookUrl) {
     console.log('N8N_WEBHOOK_URL is not set. Simulating successful submission.');
-    // Untuk pengembangan, jika webhook tidak ada, kita simulasi saja.
     return { success: true, message: 'Attendance submitted successfully! (Simulated)' };
   }
 

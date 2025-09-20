@@ -166,13 +166,13 @@ export default function AttendanceForm() {
 
   async function onSubmit(values: FormValues) {
     const submissionData = {
-        ...values,
+        level: values.level,
+        class: values.class,
         teacher: values.teacher === 'Other' ? values.otherTeacher || '' : values.teacher,
+        photo: values.photo,
     };
-    // We don't need otherTeacher in the final submission
-    const { otherTeacher, ...finalData } = submissionData;
 
-    const result = await submitAttendance(finalData);
+    const result = await submitAttendance(submissionData);
     if (result.success) {
       toast({
         title: "Success!",
