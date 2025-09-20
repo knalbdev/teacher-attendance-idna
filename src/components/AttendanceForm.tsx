@@ -3,7 +3,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Camera, Loader2, RefreshCw } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -30,11 +30,11 @@ import { useToast } from "@/hooks/use-toast";
 import { Input } from "./ui/input";
 
 const formSchema = z.object({
-  level: z.string({ required_error: "Please select a Grade." }).min(1),
-  class: z.string({ required_error: "Please select a Class." }).min(1),
-  teacher: z.string({ required_error: "Please select a Teacher's Name." }).min(1),
+  level: z.string({ required_error: "Please select a Grade." }).min(1, "Please select a Grade."),
+  class: z.string({ required_error: "Please select a Class." }).min(1, "Please select a Class."),
+  teacher: z.string({ required_error: "Please select a Teacher's Name." }).min(1, "Please select a Teacher's Name."),
   otherTeacher: z.string().optional(),
-  photo: z.string({ required_error: "Please take a photo." }).min(1),
+  photo: z.string({ required_error: "Please take a photo." }).min(1, "Please take a photo."),
 }).superRefine((data, ctx) => {
     if (data.teacher === 'Other' && (!data.otherTeacher || data.otherTeacher.trim() === '')) {
         ctx.addIssue({
@@ -52,6 +52,7 @@ export default function AttendanceForm() {
   const [teacherOptions, setTeacherOptions] = useState<string[]>([]);
   
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
+  const [isCameraOn, setIsCameraOn] = useState(false);
   const [isCameraStarting, setIsCameraStarting] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -73,11 +74,20 @@ export default function AttendanceForm() {
   const teacher = form.watch("teacher");
   const photo = form.watch("photo");
 
+  const stopCamera = useCallback(() => {
+    if (videoRef.current && videoRef.current.srcObject) {
+      const stream = videoRef.current.srcObject as MediaStream;
+      stream.getTracks().forEach(track => track.stop());
+      videoRef.current.srcObject = null;
+      setIsCameraOn(false);
+    }
+  }, []);
+
   useEffect(() => {
     if (level) {
       const selectedLevelData = data[level as Level];
       setClassOptions(selectedLevelData.class);
-      setTeacherOptions(selectedLevelData.teacher);
+      setTeacherOptions([...selectedLevelData.teacher, 'Other']);
       form.resetField("class", { defaultValue: "" });
       form.resetField("teacher", { defaultValue: "" });
       form.resetField("otherTeacher", { defaultValue: "" });
@@ -88,8 +98,9 @@ export default function AttendanceForm() {
   }, [level, form]);
 
   const startCamera = async () => {
-    if (isCameraStarting || (videoRef.current && videoRef.current.srcObject)) return;
+    if (isCameraStarting || isCameraOn) return;
     setIsCameraStarting(true);
+    setHasCameraPermission(null);
 
     try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
@@ -98,7 +109,10 @@ export default function AttendanceForm() {
             videoRef.current.srcObject = stream;
             videoRef.current.onloadedmetadata = () => {
               setIsCameraStarting(false);
+              setIsCameraOn(true);
             };
+        } else {
+          setIsCameraStarting(false);
         }
     } catch (err) {
         console.error("Error accessing camera:", err);
@@ -112,14 +126,6 @@ export default function AttendanceForm() {
     }
   };
 
-  const stopCamera = () => {
-    if (videoRef.current && videoRef.current.srcObject) {
-      const stream = videoRef.current.srcObject as MediaStream;
-      stream.getTracks().forEach(track => track.stop());
-      videoRef.current.srcObject = null;
-    }
-  };
-
   const capturePhoto = () => {
     if (videoRef.current && canvasRef.current && videoRef.current.readyState >= 3) {
       const video = videoRef.current;
@@ -127,10 +133,12 @@ export default function AttendanceForm() {
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
       const context = canvas.getContext("2d");
-      context?.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
-      const dataUrl = canvas.toDataURL("image/jpeg");
-      form.setValue("photo", dataUrl, { shouldValidate: true });
-      stopCamera();
+      if (context) {
+        context.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
+        const dataUrl = canvas.toDataURL("image/jpeg");
+        form.setValue("photo", dataUrl, { shouldValidate: true });
+        stopCamera();
+      }
     } else {
         toast({
           variant: "destructive",
@@ -142,16 +150,14 @@ export default function AttendanceForm() {
 
   const retakePhoto = () => {
     form.setValue("photo", "", { shouldValidate: true });
-    // No need to call startCamera() here, it will be handled by the button in the JSX
+    // Camera will be started by the button in the JSX
   };
 
   useEffect(() => {
-    // Cleanup function to stop camera when component unmounts
     return () => {
       stopCamera();
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [stopCamera]);
 
   async function onSubmit(values: FormValues) {
     const submissionData = {
@@ -178,13 +184,11 @@ export default function AttendanceForm() {
     }
   }
 
-  const isCameraOn = videoRef.current?.srcObject !== null && videoRef.current?.srcObject !== undefined;
-
   return (
     <>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                 <div className="space-y-6">
                     <FormField
                         control={form.control}
@@ -270,15 +274,15 @@ export default function AttendanceForm() {
                         />
                     )}
                 </div>
-                <div>
+                <div className="flex flex-col">
                     <FormField
                         control={form.control}
                         name="photo"
                         render={() => (
-                        <FormItem>
+                        <FormItem className="flex flex-col h-full">
                             <FormLabel>Attendance Photo</FormLabel>
-                            <FormControl>
-                                <div className="w-full p-2 border-dashed border-2 rounded-lg flex flex-col items-center justify-center min-h-[200px] bg-muted/50 aspect-video">
+                            <FormControl className="flex-grow">
+                                <div className="w-full h-full p-2 border-dashed border-2 rounded-lg flex flex-col items-center justify-center bg-muted/50 aspect-video">
                                     {photo ? (
                                         <div className="relative w-full">
                                             <img src={photo} alt="Attendance" className="rounded-md w-full" />
@@ -331,5 +335,6 @@ export default function AttendanceForm() {
     </>
   );
 }
+    
 
     
