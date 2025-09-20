@@ -1,6 +1,6 @@
 import AttendanceForm from '@/components/AttendanceForm';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { School } from 'lucide-react';
+import Image from 'next/image';
 
 export default function Home() {
   return (
@@ -8,9 +8,7 @@ export default function Home() {
       <main className="flex min-h-screen w-full flex-col items-center justify-center p-4 sm:p-6 lg:p-8">
         <div className="w-full max-w-md">
           <div className="flex justify-center mb-6">
-              <div className="bg-primary/10 p-4 rounded-full border border-primary/20">
-                  <School className="h-10 w-10 text-primary" />
-              </div>
+              <Image src="/logo.png" alt="Logo" width={80} height={80} className="rounded-full" />
           </div>
           <Card className="shadow-xl rounded-2xl border">
             <CardHeader className="text-center">
