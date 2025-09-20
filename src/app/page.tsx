@@ -22,7 +22,7 @@ export default function Home() {
             </CardContent>
           </Card>
           <p className="text-center text-sm text-muted-foreground mt-6">
-            IDN Boarding School &copy; {new Date().getFullYear()}
+            IDN Boarding School Akhwat &copy; {new Date().getFullYear()}
           </p>
         </div>
       </main>
