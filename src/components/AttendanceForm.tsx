@@ -30,11 +30,11 @@ import { useToast } from "@/hooks/use-toast";
 import { Input } from "./ui/input";
 
 const formSchema = z.object({
-  level: z.string({ required_error: "Please select a Grade." }).min(1, "Please select a Grade."),
-  class: z.string({ required_error: "Please select a Class." }).min(1, "Please select a Class."),
-  teacher: z.string({ required_error: "Please select a Teacher's Name." }).min(1, "Please select a Teacher's Name."),
+  level: z.string({ required_error: "Grade is required." }).min(1, "Grade is required."),
+  class: z.string({ required_error: "Class is required." }).min(1, "Class is required."),
+  teacher: z.string({ required_error: "Teacher's Name is required." }).min(1, "Teacher's Name is required."),
   otherTeacher: z.string().optional(),
-  photo: z.string({ required_error: "Please take a photo." }).min(1, "Please take a photo."),
+  photo: z.string({ required_error: "A photo is required." }).min(1, "A photo is required."),
 }).superRefine((data, ctx) => {
     if (data.teacher === 'Other' && (!data.otherTeacher || data.otherTeacher.trim() === '')) {
         ctx.addIssue({
@@ -83,21 +83,7 @@ export default function AttendanceForm() {
     }
   }, []);
 
-  useEffect(() => {
-    if (level) {
-      const selectedLevelData = data[level as Level];
-      setClassOptions(selectedLevelData.class);
-      setTeacherOptions([...selectedLevelData.teacher, 'Other']);
-      form.resetField("class", { defaultValue: "" });
-      form.resetField("teacher", { defaultValue: "" });
-      form.resetField("otherTeacher", { defaultValue: "" });
-    } else {
-      setClassOptions([]);
-      setTeacherOptions([]);
-    }
-  }, [level, form]);
-
-  const startCamera = async () => {
+  const startCamera = useCallback(async () => {
     if (isCameraStarting || isCameraOn) return;
     setIsCameraStarting(true);
     setHasCameraPermission(null);
@@ -124,7 +110,21 @@ export default function AttendanceForm() {
         });
         setIsCameraStarting(false);
     }
-  };
+  }, [isCameraStarting, isCameraOn, toast]);
+
+  useEffect(() => {
+    if (level) {
+      const selectedLevelData = data[level as Level];
+      setClassOptions(selectedLevelData.class);
+      setTeacherOptions([...selectedLevelData.teacher, 'Other']);
+      form.resetField("class", { defaultValue: "" });
+      form.resetField("teacher", { defaultValue: "" });
+      form.resetField("otherTeacher", { defaultValue: "" });
+    } else {
+      setClassOptions([]);
+      setTeacherOptions([]);
+    }
+  }, [level, form]);
 
   const capturePhoto = () => {
     if (videoRef.current && canvasRef.current && videoRef.current.readyState >= 3) {
@@ -150,7 +150,7 @@ export default function AttendanceForm() {
 
   const retakePhoto = () => {
     form.setValue("photo", "", { shouldValidate: true });
-    // Camera will be started by the button in the JSX
+    startCamera();
   };
 
   useEffect(() => {
@@ -291,9 +291,9 @@ export default function AttendanceForm() {
                                             </Button>
                                         </div>
                                     ) : (
-                                        <div className="w-full flex flex-col items-center justify-center gap-4">
-                                            <div className="w-full relative">
-                                                <video ref={videoRef} autoPlay playsInline muted className={`w-full rounded-md ${!isCameraOn ? 'hidden' : ''}`} />
+                                        <div className="w-full h-full flex flex-col items-center justify-center gap-4">
+                                            <div className="w-full relative flex-grow flex items-center justify-center">
+                                                <video ref={videoRef} autoPlay playsInline muted className={`w-full h-full object-cover rounded-md ${!isCameraOn ? 'hidden' : ''}`} />
                                                 <div className={`absolute inset-0 flex items-center justify-center ${isCameraOn ? 'hidden' : ''}`}>
                                                     <Button type="button" variant="outline" onClick={startCamera} disabled={isCameraStarting}>
                                                       {isCameraStarting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Camera className="mr-2 h-4 w-4" />}
@@ -312,7 +312,7 @@ export default function AttendanceForm() {
                                             )}
 
                                             {isCameraOn && (
-                                                <Button type="button" onClick={capturePhoto}><Camera className="mr-2 h-4 w-4" /> Capture</Button>
+                                                <Button type="button" onClick={capturePhoto} className="mt-2"><Camera className="mr-2 h-4 w-4" /> Capture</Button>
                                             )}
                                         </div>
                                     )}
@@ -335,6 +335,4 @@ export default function AttendanceForm() {
     </>
   );
 }
-    
-
     
