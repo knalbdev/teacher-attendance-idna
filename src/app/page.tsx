@@ -6,7 +6,7 @@ export default function Home() {
   return (
     <div className="bg-background">
       <main className="flex min-h-screen w-full flex-col items-center justify-center p-4 sm:p-6 lg:p-8">
-        <div className="w-full max-w-md">
+        <div className="w-full max-w-4xl">
           <div className="flex justify-center mb-6">
               <Image src="/logo.png" alt="Logo" width={80} height={80} className="rounded-full" />
           </div>

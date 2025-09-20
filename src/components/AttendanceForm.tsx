@@ -178,133 +178,137 @@ export default function AttendanceForm() {
     <>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <FormField
-            control={form.control}
-            name="jenjang"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Jenjang</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value}>
-                  <FormControl>
-                    <SelectTrigger><SelectValue placeholder="Pilih Jenjang" /></SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {jenjangOptions.map((option) => (
-                      <SelectItem key={option} value={option}>{option}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="kelas"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Kelas</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value} disabled={!jenjang}>
-                  <FormControl>
-                    <SelectTrigger><SelectValue placeholder="Pilih Kelas" /></SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {kelasOptions.map((option) => (
-                      <SelectItem key={option} value={option}>{option}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="guru"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Nama Guru</FormLabel>
-                 <Select onValueChange={(value) => {
-                    field.onChange(value);
-                    if (value !== 'Lainnya') {
-                        form.setValue('guruLainnya', '');
-                    }
-                 }} value={field.value} disabled={!jenjang}>
-                  <FormControl>
-                    <SelectTrigger><SelectValue placeholder="Pilih Nama Guru" /></SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {guruOptions.map((option) => (
-                      <SelectItem key={option} value={option}>{option}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          {guru === 'Lainnya' && (
-             <FormField
-                control={form.control}
-                name="guruLainnya"
-                render={({ field }) => (
-                <FormItem>
-                    <FormLabel>Nama Guru Lainnya</FormLabel>
-                    <FormControl>
-                        <Input placeholder="Masukkan nama guru" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                </FormItem>
-                )}
-            />
-          )}
-
-          <FormField
-            control={form.control}
-            name="photo"
-            render={() => (
-              <FormItem>
-                <FormLabel>Attendance Photo</FormLabel>
-                <FormControl>
-                    <div className="w-full p-2 border-dashed border-2 rounded-lg flex flex-col items-center justify-center min-h-[200px] bg-muted/50">
-                        {form.getValues("photo") ? (
-                            <div className="relative w-full max-w-xs">
-                                <img src={form.getValues("photo")} alt="Attendance" className="rounded-md w-full" />
-                                <Button type="button" size="icon" variant="destructive" className="absolute -top-3 -right-3 rounded-full shadow-lg" onClick={retakePhoto}>
-                                    <RefreshCw className="h-4 w-4" />
-                                </Button>
-                            </div>
-                        ) : isCameraOn ? (
-                            <div className="w-full flex flex-col items-center gap-4">
-                                <video ref={videoRef} autoPlay playsInline muted className="w-full max-w-xs rounded-md" />
-                                <Button type="button" onClick={capturePhoto}><Camera className="mr-2 h-4 w-4" /> Capture</Button>
-                            </div>
-                        ) : (
-                          <>
-                            <Button type="button" variant="outline" onClick={startCamera}>
-                                <Camera className="mr-2 h-4 w-4" /> Enable Camera
-                            </Button>
-                            {hasCameraPermission === false && (
-                                <Alert variant="destructive" className="mt-4">
-                                    <AlertTitle>Camera Access Denied</AlertTitle>
-                                    <AlertDescription>
-                                        Please enable camera permissions in your browser settings.
-                                    </AlertDescription>
-                                </Alert>
-                            )}
-                          </>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+                <div className="space-y-6">
+                    <FormField
+                        control={form.control}
+                        name="jenjang"
+                        render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Jenjang</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                                <SelectTrigger><SelectValue placeholder="Pilih Jenjang" /></SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                                {jenjangOptions.map((option) => (
+                                <SelectItem key={option} value={option}>{option}</SelectItem>
+                                ))}
+                            </SelectContent>
+                            </Select>
+                            <FormMessage />
+                        </FormItem>
                         )}
-                        <canvas ref={canvasRef} className="hidden" />
-                    </div>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+                    />
 
+                    <FormField
+                        control={form.control}
+                        name="kelas"
+                        render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Kelas</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value} disabled={!jenjang}>
+                            <FormControl>
+                                <SelectTrigger><SelectValue placeholder="Pilih Kelas" /></SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                                {kelasOptions.map((option) => (
+                                <SelectItem key={option} value={option}>{option}</SelectItem>
+                                ))}
+                            </SelectContent>
+                            </Select>
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
+
+                    <FormField
+                        control={form.control}
+                        name="guru"
+                        render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Nama Guru</FormLabel>
+                            <Select onValueChange={(value) => {
+                                field.onChange(value);
+                                if (value !== 'Lainnya') {
+                                    form.setValue('guruLainnya', '');
+                                }
+                            }} value={field.value} disabled={!jenjang}>
+                            <FormControl>
+                                <SelectTrigger><SelectValue placeholder="Pilih Nama Guru" /></SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                                {guruOptions.map((option) => (
+                                <SelectItem key={option} value={option}>{option}</SelectItem>
+                                ))}
+                            </SelectContent>
+                            </Select>
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
+
+                    {guru === 'Lainnya' && (
+                        <FormField
+                            control={form.control}
+                            name="guruLainnya"
+                            render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Nama Guru Lainnya</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="Masukkan nama guru" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                            )}
+                        />
+                    )}
+                </div>
+                <div>
+                    <FormField
+                        control={form.control}
+                        name="photo"
+                        render={() => (
+                        <FormItem>
+                            <FormLabel>Attendance Photo</FormLabel>
+                            <FormControl>
+                                <div className="w-full p-2 border-dashed border-2 rounded-lg flex flex-col items-center justify-center min-h-[200px] bg-muted/50 aspect-video">
+                                    {form.getValues("photo") ? (
+                                        <div className="relative w-full">
+                                            <img src={form.getValues("photo")} alt="Attendance" className="rounded-md w-full" />
+                                            <Button type="button" size="icon" variant="destructive" className="absolute -top-3 -right-3 rounded-full shadow-lg" onClick={retakePhoto}>
+                                                <RefreshCw className="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                    ) : isCameraOn ? (
+                                        <div className="w-full flex flex-col items-center gap-4">
+                                            <video ref={videoRef} autoPlay playsInline muted className="w-full rounded-md" />
+                                            <Button type="button" onClick={capturePhoto}><Camera className="mr-2 h-4 w-4" /> Capture</Button>
+                                        </div>
+                                    ) : (
+                                    <>
+                                        <Button type="button" variant="outline" onClick={startCamera}>
+                                            <Camera className="mr-2 h-4 w-4" /> Enable Camera
+                                        </Button>
+                                        {hasCameraPermission === false && (
+                                            <Alert variant="destructive" className="mt-4">
+                                                <AlertTitle>Camera Access Denied</AlertTitle>
+                                                <AlertDescription>
+                                                    Please enable camera permissions in your browser settings.
+                                                </AlertDescription>
+                                            </Alert>
+                                        )}
+                                    </>
+                                    )}
+                                    <canvas ref={canvasRef} className="hidden" />
+                                </div>
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
+                </div>
+            </div>
 
           <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
             {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
