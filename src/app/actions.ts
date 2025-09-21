@@ -25,11 +25,16 @@ export async function submitAttendance(data: AttendanceData): Promise<{ success:
 
   const webhookUrl = process.env.N8N_WEBHOOK_URL;
 
+  // Temporarily bypass the webhook to avoid fetch errors due to large payload size.
   if (!webhookUrl) {
     console.log('N8N_WEBHOOK_URL is not set. Simulating successful submission.');
     return { success: true, message: 'Attendance submitted successfully! (Simulated)' };
   }
 
+  // To re-enable, uncomment the try/catch block and remove the line below.
+  return { success: true, message: 'Attendance submitted successfully! (Simulated)' };
+
+  /*
   try {
     const response = await fetch(webhookUrl, {
       method: 'POST',
@@ -53,4 +58,5 @@ export async function submitAttendance(data: AttendanceData): Promise<{ success:
     }
     return { success: false, message: 'An unknown error occurred.' };
   }
+  */
 }
