@@ -30,8 +30,10 @@ export async function submitAttendance(data: AttendanceData): Promise<{ success:
   }
 
   const now = new Date();
-  const pad = (n: number) => n.toString().padStart(2, '0');
-  const timestamp = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+  const timestamp = now.toLocaleString('id-ID', {
+    timeZone: 'Asia/Jakarta',
+    hour12: false,
+  }).replace(/\./g, ':').replace(',', '');
 
   const payload = {
     jenjang: validatedFields.data.level,
