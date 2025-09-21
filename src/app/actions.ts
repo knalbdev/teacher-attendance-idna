@@ -29,12 +29,16 @@ export async function submitAttendance(data: AttendanceData): Promise<{ success:
     return { success: true, message: 'Attendance submitted successfully! (Simulated)' };
   }
 
+  const now = new Date();
+  const pad = (n: number) => n.toString().padStart(2, '0');
+  const timestamp = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+
   const payload = {
     jenjang: validatedFields.data.level,
     kelas: validatedFields.data.class,
     guru: validatedFields.data.teacher,
     foto: validatedFields.data.photo,
-    timestamp: new Date().toLocaleString('id-ID', { hour12: false }),
+    timestamp,
   };
 
   try {
