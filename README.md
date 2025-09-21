@@ -1,5 +1,5 @@
-# Firebase Studio
+# Teacher Attendance System 
 
-This is a NextJS starter in Firebase Studio.
+This project is dedicated to IDN Boarding School Akhwat.
 
-To get started, take a look at src/app/page.tsx.
+Developed by: Setianing Budi

@@ -1,4 +1,3 @@
-
 'use server';
 
 import { z } from 'zod';
@@ -25,23 +24,26 @@ export async function submitAttendance(data: AttendanceData): Promise<{ success:
 
   const webhookUrl = process.env.N8N_WEBHOOK_URL;
 
-  // Temporarily bypass the webhook to avoid fetch errors due to large payload size.
   if (!webhookUrl) {
     console.log('N8N_WEBHOOK_URL is not set. Simulating successful submission.');
     return { success: true, message: 'Attendance submitted successfully! (Simulated)' };
   }
 
-  // To re-enable, uncomment the try/catch block and remove the line below.
-  return { success: true, message: 'Attendance submitted successfully! (Simulated)' };
+  const payload = {
+    jenjang: validatedFields.data.level,
+    kelas: validatedFields.data.class,
+    guru: validatedFields.data.teacher,
+    foto: validatedFields.data.photo,
+    timestamp: new Date().toLocaleString('id-ID', { hour12: false }),
+  };
 
-  /*
   try {
     const response = await fetch(webhookUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(validatedFields.data),
+      body: JSON.stringify(payload),
     });
 
     if (!response.ok) {
@@ -58,5 +60,4 @@ export async function submitAttendance(data: AttendanceData): Promise<{ success:
     }
     return { success: false, message: 'An unknown error occurred.' };
   }
-  */
 }
