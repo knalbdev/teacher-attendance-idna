@@ -50,3 +50,13 @@ export const data: AppData = {
     ],
   },
 };
+
+export const jpData = [
+    { jp: '1', time: '07:30' },
+    { jp: '2', time: '08:15' },
+    { jp: '3', time: '09:00' },
+    { jp: '4', time: '10:00' },
+    { jp: '5', time: '10:45' },
+    { jp: '6', time: '13:00' },
+    { jp: '7', time: '13:45' },
+];

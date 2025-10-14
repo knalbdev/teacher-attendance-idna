@@ -8,7 +8,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { submitAttendance } from "@/app/actions";
-import { data, type Level } from "@/lib/data";
+import { data, jpData, type Level } from "@/lib/data";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -33,6 +33,7 @@ const formSchema = z.object({
   level: z.string({ required_error: "This field is required." }).min(1, "This field is required."),
   class: z.string({ required_error: "This field is required." }).min(1, "This field is required."),
   teacher: z.string({ required_error: "This field is required." }).min(1, "This field is required."),
+  jp: z.string({ required_error: "This field is required." }).min(1, "This field is required."),
   otherTeacher: z.string().optional(),
   photo: z.string({ required_error: "A photo is required." }).min(1, "A photo is required."),
 }).superRefine((data, ctx) => {
@@ -66,6 +67,7 @@ export default function AttendanceForm() {
       level: "",
       class: "",
       teacher: "",
+      jp: "",
       otherTeacher: "",
       photo: "",
     },
@@ -124,6 +126,7 @@ export default function AttendanceForm() {
       setTeacherOptions([...selectedLevelData.teacher]);
       form.resetField("class", { defaultValue: "" });
       form.resetField("teacher", { defaultValue: "" });
+      form.resetField("jp", { defaultValue: "" });
       form.resetField("otherTeacher", { defaultValue: "" });
     } else {
       setClassOptions([]);
@@ -169,6 +172,7 @@ export default function AttendanceForm() {
         level: values.level,
         class: values.class,
         teacher: values.teacher === 'Other' ? values.otherTeacher || '' : values.teacher,
+        jp: values.jp,
         photo: values.photo,
     };
 
@@ -229,6 +233,29 @@ export default function AttendanceForm() {
                             <SelectContent>
                                 {classOptions.map((option) => (
                                 <SelectItem key={option} value={option}>{option}</SelectItem>
+                                ))}
+                            </SelectContent>
+                            </Select>
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
+
+                    <FormField
+                        control={form.control}
+                        name="jp"
+                        render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>JP</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value} disabled={!level}>
+                            <FormControl>
+                                <SelectTrigger><SelectValue placeholder="Select JP" /></SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                                {jpData.map((item) => (
+                                <SelectItem key={item.jp} value={`${item.jp} (${item.time})`}>
+                                    {item.jp} ({item.time})
+                                </SelectItem>
                                 ))}
                             </SelectContent>
                             </Select>

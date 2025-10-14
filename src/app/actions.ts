@@ -6,6 +6,7 @@ const formSchema = z.object({
   level: z.string().min(1, 'Grade is required.'),
   class: z.string().min(1, 'Class is required.'),
   teacher: z.string().min(1, 'Teacher Name is required.'),
+  jp: z.string().min(1, 'JP is required.'),
   photo: z.string().min(1, 'Photo is required.'),
 });
 
@@ -38,6 +39,7 @@ export async function submitAttendance(data: AttendanceData): Promise<{ success:
   const payload = {
     jenjang: validatedFields.data.level,
     kelas: validatedFields.data.class,
+    jp: validatedFields.data.jp,
     guru: validatedFields.data.teacher,
     foto: validatedFields.data.photo,
     timestamp,
