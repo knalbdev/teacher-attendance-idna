@@ -74,6 +74,8 @@ export default function AttendanceForm() {
   });
 
   const level = form.watch("level");
+  const classValue = form.watch("class");
+  const jpValue = form.watch("jp");
   const teacher = form.watch("teacher");
   const photo = form.watch("photo");
 
@@ -247,7 +249,7 @@ export default function AttendanceForm() {
                         render={({ field }) => (
                         <FormItem>
                             <FormLabel>JP</FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value} disabled={!level}>
+                            <Select onValueChange={field.onChange} value={field.value} disabled={!classValue}>
                             <FormControl>
                                 <SelectTrigger><SelectValue placeholder="Select JP" /></SelectTrigger>
                             </FormControl>
@@ -275,7 +277,7 @@ export default function AttendanceForm() {
                                 if (value !== 'Other') {
                                     form.setValue('otherTeacher', '');
                                 }
-                            }} value={field.value} disabled={!level}>
+                            }} value={field.value} disabled={!jpValue}>
                             <FormControl>
                                 <SelectTrigger><SelectValue placeholder="Select Teacher's Name" /></SelectTrigger>
                             </FormControl>
