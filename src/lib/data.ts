@@ -12,7 +12,7 @@ interface AppData {
 
 export const data: AppData = {
   'SMP': {
-    class: ['Class 7A', 'Class 7B', 'Class 8A', 'Class 8B', 'Class 9A', 'Class 9B'],
+    class: ['7A', '7B', '8A', '8B', '9A', '9B'],
     teacher: [
         'Adinda Eka Febrianti',
         'Anisa',
