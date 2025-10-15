@@ -25,6 +25,7 @@ export const data: AppData = {
         'Widya Aini',
         'Tifany Fadianisah',
         'Khansa Meisastia',
+        'Ratih Eldina',
         'Annisa Rahayu',
         'Haura Salsabila Az-Zahra',
         'Rasitania Ayudya',
@@ -45,6 +46,8 @@ export const data: AppData = {
         'Tri Wahyu Nengsih',
         'Salwa',
         'Ratih Eldina',
+        'Annisa Rahayu',
+        'Haura Salsabila Az-Zahra',
         'Rasitania Ayudya',
         'Other'
     ],
