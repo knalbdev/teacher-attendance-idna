@@ -12,7 +12,7 @@ interface AppData {
 
 export const data: AppData = {
   'SMP': {
-    class: ['7A', '7B', '8A', '8B', '9A', '9B'],
+    class: ['7A', '7B', '8A', '8B', '9A', '9B', 'Combine - 7A & 7B', 'Combine - 8A & 8B', 'Combine - 9A & 9B'],
     teacher: [
         'Adinda Eka Febrianti',
         'Anisa',
@@ -33,7 +33,7 @@ export const data: AppData = {
     ],
   },
   'SMK': {
-    class: ['10 DKV', '10 RPL', '11 DKV', '11 RPL'],
+    class: ['10 DKV', '10 RPL', '11 DKV', '11 RPL', 'Combine - 10 RPL & 10 DKV', 'Combine - 11 RPL & 11 DKV'],
     teacher: [
         'Wida Mudrikah',
         'Setianing Budi',
