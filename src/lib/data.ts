@@ -62,4 +62,5 @@ export const jpData = [
     { jp: '5', time: '10:45' },
     { jp: '6', time: '13:00' },
     { jp: '7', time: '13:45' },
+    { jp: '1 - Jumat', time: '08.00' },
 ];
