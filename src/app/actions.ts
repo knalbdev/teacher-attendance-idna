@@ -23,10 +23,10 @@ export async function submitAttendance(data: AttendanceData): Promise<{ success:
     };
   }
 
-  const webhookUrl = process.env.N8N_WEBHOOK_URL;
+  const webhookUrl = process.env.APPS_SCRIPT_URL;
 
   if (!webhookUrl) {
-    console.log('N8N_WEBHOOK_URL is not set. Simulating successful submission.');
+    console.log('APPS_SCRIPT_URL is not set. Simulating successful submission.');
     return { success: true, message: 'Attendance submitted successfully! (Simulated)' };
   }
 
