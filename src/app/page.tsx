@@ -1,4 +1,5 @@
 import AttendanceForm from '@/components/AttendanceForm';
+import MessageTicker from '@/components/MessageTicker';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import Image from 'next/image';
 
@@ -8,7 +9,7 @@ export default function Home() {
       <main className="flex min-h-screen w-full flex-col items-center justify-center p-4 sm:p-6 lg:p-8">
         <div className="w-full max-w-4xl">
           <div className="flex justify-center mb-6">
-              <Image src="/logo.png" alt="Logo" width={80} height={80} className="rounded-full" />
+            <Image src="/logo.png" alt="Logo" width={80} height={80} className="rounded-full" />
           </div>
           <Card className="shadow-xl rounded-2xl border">
             <CardHeader className="text-center">
@@ -21,6 +22,9 @@ export default function Home() {
               <AttendanceForm />
             </CardContent>
           </Card>
+
+          <MessageTicker />
+
           <p className="text-center text-sm text-muted-foreground mt-6">
             IDN Boarding School Akhwat &copy; {new Date().getFullYear()}
           </p>

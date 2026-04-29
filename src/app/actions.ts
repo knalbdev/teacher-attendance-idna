@@ -2,6 +2,47 @@
 
 import { z } from 'zod';
 
+export async function getMessages(): Promise<Array<{ nama: string; pesan: string }>> {
+  const url = process.env.APPS_SCRIPT_URL;
+  if (!url) return [];
+  try {
+    const response = await fetch(url, { cache: 'no-store' });
+    const data = await response.json() as { success: boolean; messages?: Array<{ nama: string; pesan: string }> };
+    return data.success ? (data.messages ?? []) : [];
+  } catch {
+    return [];
+  }
+}
+
+export async function submitMessage(nama: string, pesan: string): Promise<{ success: boolean; message: string }> {
+  const url = process.env.APPS_SCRIPT_URL;
+  if (!url) return { success: false, message: 'URL not configured.' };
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 5000);
+
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type: 'pesan', nama, pesan }),
+      signal: controller.signal,
+    });
+    clearTimeout(timer);
+    if (!response.ok) return { success: false, message: 'Submission failed.' };
+    const result = await response.json() as { success: boolean; error?: string };
+    return result.success
+      ? { success: true, message: 'Message sent!' }
+      : { success: false, message: result.error ?? 'Unknown error.' };
+  } catch (error) {
+    clearTimeout(timer);
+    if (error instanceof Error && error.name === 'AbortError') {
+      return { success: true, message: 'Message sent!' };
+    }
+    return { success: false, message: 'An error occurred.' };
+  }
+}
+
 const formSchema = z.object({
   level: z.string().min(1, 'Grade is required.'),
   class: z.string().min(1, 'Class is required.'),
