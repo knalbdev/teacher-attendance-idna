@@ -72,13 +72,13 @@ export default function MessageTicker() {
   const current = messages[currentIndex];
 
   return (
-    <div className="w-full max-w-4xl space-y-3 mt-4">
+    <div className="w-full max-w-4xl space-y-2">
       <div
-        className="relative rounded-2xl border border-indigo-200/60 px-8 pt-6 flex flex-col items-center justify-center"
+        className="relative rounded-2xl border border-indigo-200/60 px-6 pt-4 flex flex-col items-center justify-center"
         style={{
           background: "linear-gradient(135deg, #eef2ff 0%, #e0e7ff 50%, #ede9fe 100%)",
-          paddingBottom: messages.length > 1 ? "2.5rem" : "1.5rem",
-          minHeight: "120px",
+          paddingBottom: messages.length > 1 ? "2rem" : "1rem",
+          minHeight: "80px",
         }}
       >
         {/* Decorative quote mark */}
@@ -93,7 +93,7 @@ export default function MessageTicker() {
         <div className="text-center z-10 w-full" style={animStyle}>
           {current ? (
             <>
-              <p className="text-base sm:text-lg font-semibold text-slate-700 leading-relaxed break-words hyphens-auto">
+              <p className="text-sm sm:text-base font-semibold text-slate-700 leading-relaxed break-words hyphens-auto">
                 &ldquo;{current.pesan}&rdquo;
               </p>
               <p className="text-sm text-indigo-400 font-medium mt-2">— {current.nama}</p>
