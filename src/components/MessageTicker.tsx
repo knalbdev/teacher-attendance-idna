@@ -72,12 +72,12 @@ export default function MessageTicker() {
 
   return (
     <div className="w-full max-w-4xl space-y-3 mt-4">
-      <div className="relative overflow-hidden rounded-2xl border border-violet-200/60 dark:border-violet-800/40 px-8 py-6 min-h-[120px] flex flex-col items-center justify-center"
-        style={{ background: "linear-gradient(135deg, #f5f3ff 0%, #ede9fe 40%, #e0e7ff 100%)" }}>
+      <div className="relative overflow-hidden rounded-2xl border border-indigo-200/60 px-8 py-6 min-h-[120px] flex flex-col items-center justify-center"
+        style={{ background: "linear-gradient(135deg, #eef2ff 0%, #e0e7ff 50%, #ede9fe 100%)" }}>
 
         {/* Decorative quote mark */}
         <span className="absolute top-2 left-4 text-7xl font-serif leading-none select-none pointer-events-none"
-          style={{ color: "rgba(139, 92, 246, 0.15)" }}>
+          style={{ color: "rgba(99, 102, 241, 0.15)" }}>
           &ldquo;
         </span>
 
@@ -88,7 +88,7 @@ export default function MessageTicker() {
               <p className="text-lg font-semibold text-slate-700 leading-relaxed">
                 &ldquo;{current.pesan}&rdquo;
               </p>
-              <p className="text-sm text-violet-500 font-medium mt-2">— {current.nama}</p>
+              <p className="text-sm text-indigo-400 font-medium mt-2">— {current.nama}</p>
             </>
           ) : (
             <p className="text-sm text-slate-400 italic">
@@ -106,7 +106,7 @@ export default function MessageTicker() {
                 className="h-1.5 rounded-full transition-all duration-300"
                 style={{
                   width: i === currentIndex ? "20px" : "6px",
-                  background: i === currentIndex ? "#8b5cf6" : "#c4b5fd",
+                  background: i === currentIndex ? "#6366f1" : "#c7d2fe",
                 }}
               />
             ))}
