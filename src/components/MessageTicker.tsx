@@ -15,7 +15,7 @@ interface Message {
 export default function MessageTicker() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [visible, setVisible] = useState(true);
+  const [animState, setAnimState] = useState<"visible" | "exit" | "enter">("visible");
   const [nama, setNama] = useState("");
   const [pesan, setPesan] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -35,11 +35,12 @@ export default function MessageTicker() {
   useEffect(() => {
     if (messages.length <= 1) return;
     const cycle = setInterval(() => {
-      setVisible(false);
+      setAnimState("exit");
       setTimeout(() => {
         setCurrentIndex((prev) => (prev + 1) % messages.length);
-        setVisible(true);
-      }, 400);
+        setAnimState("enter");
+        setTimeout(() => setAnimState("visible"), 50);
+      }, 350);
     }, 5000);
     return () => clearInterval(cycle);
   }, [messages.length]);
@@ -60,30 +61,60 @@ export default function MessageTicker() {
     setIsSubmitting(false);
   };
 
+  const animStyle: React.CSSProperties =
+    animState === "exit"
+      ? { opacity: 0, transform: "translateX(-24px)", transition: "all 0.35s ease" }
+      : animState === "enter"
+      ? { opacity: 0, transform: "translateX(24px)" }
+      : { opacity: 1, transform: "translateX(0)", transition: "all 0.4s ease" };
+
   const current = messages[currentIndex];
 
   return (
     <div className="w-full max-w-4xl space-y-3 mt-4">
-      <div className="bg-primary/5 border border-primary/20 rounded-xl px-6 py-4 min-h-[72px] flex items-center justify-center">
-        <div
-          className="text-center transition-opacity duration-400"
-          style={{ opacity: visible ? 1 : 0 }}
-        >
+      <div className="relative overflow-hidden rounded-2xl border border-violet-200/60 dark:border-violet-800/40 px-8 py-6 min-h-[120px] flex flex-col items-center justify-center"
+        style={{ background: "linear-gradient(135deg, #f5f3ff 0%, #ede9fe 40%, #e0e7ff 100%)" }}>
+
+        {/* Decorative quote mark */}
+        <span className="absolute top-2 left-4 text-7xl font-serif leading-none select-none pointer-events-none"
+          style={{ color: "rgba(139, 92, 246, 0.15)" }}>
+          &ldquo;
+        </span>
+
+        {/* Message */}
+        <div className="text-center z-10 px-4" style={animStyle}>
           {current ? (
             <>
-              <p className="text-base text-foreground font-medium leading-snug">
+              <p className="text-lg font-semibold text-slate-700 leading-relaxed">
                 &ldquo;{current.pesan}&rdquo;
               </p>
-              <p className="text-sm text-muted-foreground mt-1">— {current.nama}</p>
+              <p className="text-sm text-violet-500 font-medium mt-2">— {current.nama}</p>
             </>
           ) : (
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-slate-400 italic">
               Belum ada pesan hari ini. Yuk bagikan semangatmu! 💪
             </p>
           )}
         </div>
+
+        {/* Dot indicators */}
+        {messages.length > 1 && (
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+            {messages.map((_, i) => (
+              <div
+                key={i}
+                className="h-1.5 rounded-full transition-all duration-300"
+                style={{
+                  width: i === currentIndex ? "20px" : "6px",
+                  background: i === currentIndex ? "#8b5cf6" : "#c4b5fd",
+                }}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
+      {/* Form */}
       <form onSubmit={handleSubmit} className="flex gap-2">
         <Input
           placeholder="Nama kamu"
