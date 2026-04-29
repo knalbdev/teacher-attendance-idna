@@ -12,12 +12,12 @@ export default function Home() {
         <div className="w-full max-w-4xl space-y-4">
 
           {/* Header */}
-          <div className="flex items-center gap-4 px-1">
-            <div className="rounded-xl overflow-hidden shadow ring-1 ring-slate-200/80 shrink-0">
+          <div className="flex flex-col items-center gap-2 text-center">
+            <div className="rounded-xl overflow-hidden shadow ring-1 ring-slate-200/80">
               <Image src="/logo.png" alt="Logo" width={64} height={64} />
             </div>
             <div>
-              <h1 className="text-2xl font-bold tracking-tight text-slate-900 leading-tight">
+              <h1 className="text-2xl font-bold tracking-tight text-slate-900">
                 Teacher Attendance System
               </h1>
               <p className="text-sm text-slate-500 mt-0.5">IDN Boarding School Akhwat</p>
