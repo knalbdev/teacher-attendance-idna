@@ -45,26 +45,41 @@ export async function submitAttendance(data: AttendanceData): Promise<{ success:
     timestamp,
   };
 
+  const postOptions = {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  };
+
   try {
-    const response = await fetch(webhookUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-    });
+    // Apps Script redirects POST to a different URL — follow manually to keep POST method
+    let response = await fetch(webhookUrl, { ...postOptions, redirect: 'manual' });
+
+    if (response.status === 301 || response.status === 302) {
+      const redirectUrl = response.headers.get('location');
+      if (!redirectUrl) {
+        return { success: false, message: 'Redirect URL not found.' };
+      }
+      response = await fetch(redirectUrl, postOptions);
+    }
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Webhook submission failed:', errorText);
-      return { success: false, message: `Webhook submission failed: ${response.statusText}` };
+      console.error('Submission failed:', errorText);
+      return { success: false, message: `Submission failed: ${response.statusText}` };
+    }
+
+    const result = await response.json() as { success: boolean; error?: string };
+    if (!result.success) {
+      console.error('Apps Script error:', result.error);
+      return { success: false, message: `Error: ${result.error ?? 'Unknown error from Apps Script'}` };
     }
 
     return { success: true, message: 'Attendance submitted successfully!' };
   } catch (error) {
-    console.error('Error submitting to webhook:', error);
+    console.error('Error submitting attendance:', error);
     if (error instanceof Error) {
-        return { success: false, message: `An error occurred: ${error.message}` };
+      return { success: false, message: `An error occurred: ${error.message}` };
     }
     return { success: false, message: 'An unknown error occurred.' };
   }
