@@ -14,6 +14,8 @@ interface Message {
 
 export default function MessageTicker() {
   const [messages, setMessages] = useState<Message[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [visible, setVisible] = useState(true);
   const [nama, setNama] = useState("");
   const [pesan, setPesan] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -26,9 +28,21 @@ export default function MessageTicker() {
 
   useEffect(() => {
     loadMessages();
-    const interval = setInterval(loadMessages, 30000);
-    return () => clearInterval(interval);
+    const refresh = setInterval(loadMessages, 30000);
+    return () => clearInterval(refresh);
   }, [loadMessages]);
+
+  useEffect(() => {
+    if (messages.length <= 1) return;
+    const cycle = setInterval(() => {
+      setVisible(false);
+      setTimeout(() => {
+        setCurrentIndex((prev) => (prev + 1) % messages.length);
+        setVisible(true);
+      }, 400);
+    }, 5000);
+    return () => clearInterval(cycle);
+  }, [messages.length]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,17 +60,27 @@ export default function MessageTicker() {
     setIsSubmitting(false);
   };
 
-  const tickerText =
-    messages.length > 0
-      ? messages.map((m) => `💬 "${m.pesan}" — ${m.nama}`).join("   ✦   ")
-      : "Belum ada pesan hari ini. Yuk bagikan semangatmu untuk teman-teman! 💪";
+  const current = messages[currentIndex];
 
   return (
     <div className="w-full max-w-4xl space-y-3 mt-4">
-      <div className="bg-primary/5 border border-primary/20 rounded-xl py-2.5 overflow-hidden">
-        <div className="flex w-max animate-marquee">
-          <span className="text-sm text-primary/80 px-8 whitespace-nowrap">{tickerText}</span>
-          <span className="text-sm text-primary/80 px-8 whitespace-nowrap" aria-hidden>{tickerText}</span>
+      <div className="bg-primary/5 border border-primary/20 rounded-xl px-6 py-4 min-h-[72px] flex items-center justify-center">
+        <div
+          className="text-center transition-opacity duration-400"
+          style={{ opacity: visible ? 1 : 0 }}
+        >
+          {current ? (
+            <>
+              <p className="text-base text-foreground font-medium leading-snug">
+                &ldquo;{current.pesan}&rdquo;
+              </p>
+              <p className="text-sm text-muted-foreground mt-1">— {current.nama}</p>
+            </>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              Belum ada pesan hari ini. Yuk bagikan semangatmu! 💪
+            </p>
+          )}
         </div>
       </div>
 
