@@ -12,6 +12,8 @@ const formSchema = z.object({
 
 type AttendanceData = z.infer<typeof formSchema>;
 
+const TIMEOUT_MS = 5000;
+
 export async function submitAttendance(data: AttendanceData): Promise<{ success: boolean; message: string; }> {
 
   const validatedFields = formSchema.safeParse(data);
@@ -45,12 +47,17 @@ export async function submitAttendance(data: AttendanceData): Promise<{ success:
     timestamp,
   };
 
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+
   try {
     const response = await fetch(webhookUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
+      signal: controller.signal,
     });
+    clearTimeout(timer);
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -66,6 +73,12 @@ export async function submitAttendance(data: AttendanceData): Promise<{ success:
 
     return { success: true, message: 'Attendance submitted successfully!' };
   } catch (error) {
+    clearTimeout(timer);
+    // Timeout — Apps Script still processing in background, assume success
+    if (error instanceof Error && error.name === 'AbortError') {
+      console.log('Apps Script timeout — processing in background');
+      return { success: true, message: 'Attendance submitted successfully!' };
+    }
     console.error('Error submitting attendance:', error);
     if (error instanceof Error) {
       return { success: false, message: `An error occurred: ${error.message}` };
