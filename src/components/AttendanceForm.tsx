@@ -318,7 +318,7 @@ export default function AttendanceForm() {
                         <FormItem className="flex flex-col h-full">
                             <FormLabel>Attendance Photo</FormLabel>
                             <FormControl className="flex-grow">
-                                <div className="w-full p-2 border-dashed border-2 rounded-lg flex items-center justify-center bg-muted/50 aspect-video relative">
+                                <div className="w-full p-2 border-dashed border-2 rounded-lg flex items-center justify-center bg-muted/50 aspect-video max-h-52 relative">
                                     {photo ? (
                                         <div className="relative w-full aspect-video">
                                             <img src={photo} alt="Attendance" className="rounded-md w-full h-full object-cover" />
