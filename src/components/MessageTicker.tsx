@@ -5,6 +5,7 @@ import { Loader2, Send } from "lucide-react";
 import { getMessages, submitMessage } from "@/app/actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 
 interface Message {
@@ -72,20 +73,27 @@ export default function MessageTicker() {
 
   return (
     <div className="w-full max-w-4xl space-y-3 mt-4">
-      <div className="relative overflow-hidden rounded-2xl border border-indigo-200/60 px-8 py-6 min-h-[120px] flex flex-col items-center justify-center"
-        style={{ background: "linear-gradient(135deg, #eef2ff 0%, #e0e7ff 50%, #ede9fe 100%)" }}>
-
+      <div
+        className="relative rounded-2xl border border-indigo-200/60 px-8 pt-6 flex flex-col items-center justify-center"
+        style={{
+          background: "linear-gradient(135deg, #eef2ff 0%, #e0e7ff 50%, #ede9fe 100%)",
+          paddingBottom: messages.length > 1 ? "2.5rem" : "1.5rem",
+          minHeight: "120px",
+        }}
+      >
         {/* Decorative quote mark */}
-        <span className="absolute top-2 left-4 text-7xl font-serif leading-none select-none pointer-events-none"
-          style={{ color: "rgba(99, 102, 241, 0.15)" }}>
+        <span
+          className="absolute top-2 left-4 text-7xl font-serif leading-none select-none pointer-events-none"
+          style={{ color: "rgba(99, 102, 241, 0.15)" }}
+        >
           &ldquo;
         </span>
 
         {/* Message */}
-        <div className="text-center z-10 px-4" style={animStyle}>
+        <div className="text-center z-10 w-full" style={animStyle}>
           {current ? (
             <>
-              <p className="text-lg font-semibold text-slate-700 leading-relaxed">
+              <p className="text-base sm:text-lg font-semibold text-slate-700 leading-relaxed break-words hyphens-auto">
                 &ldquo;{current.pesan}&rdquo;
               </p>
               <p className="text-sm text-indigo-400 font-medium mt-2">— {current.nama}</p>
@@ -99,7 +107,7 @@ export default function MessageTicker() {
 
         {/* Dot indicators */}
         {messages.length > 1 && (
-          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 flex-wrap justify-center max-w-[80%]">
             {messages.map((_, i) => (
               <div
                 key={i}
@@ -115,22 +123,33 @@ export default function MessageTicker() {
       </div>
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="flex gap-2">
+      <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-2">
         <Input
           placeholder="Nama kamu"
           value={nama}
           onChange={(e) => setNama(e.target.value)}
-          className="w-36 shrink-0"
+          className="sm:w-36 shrink-0"
           maxLength={50}
         />
-        <Input
-          placeholder="Tulis kata-kata semangatmu..."
-          value={pesan}
-          onChange={(e) => setPesan(e.target.value)}
-          className="flex-1"
-          maxLength={200}
-        />
-        <Button type="submit" disabled={isSubmitting} size="sm" className="shrink-0">
+        <div className="flex-1 relative">
+          <Textarea
+            placeholder="Tulis kata-kata semangatmu..."
+            value={pesan}
+            onChange={(e) => setPesan(e.target.value)}
+            className="resize-none pr-14 min-h-[40px] h-10"
+            maxLength={200}
+            rows={1}
+            onInput={(e) => {
+              const t = e.currentTarget;
+              t.style.height = "auto";
+              t.style.height = t.scrollHeight + "px";
+            }}
+          />
+          <span className="absolute bottom-2 right-2 text-xs text-muted-foreground pointer-events-none">
+            {pesan.length}/200
+          </span>
+        </div>
+        <Button type="submit" disabled={isSubmitting} size="sm" className="shrink-0 self-end h-10">
           {isSubmitting
             ? <Loader2 className="h-4 w-4 animate-spin" />
             : <Send className="h-4 w-4" />}
