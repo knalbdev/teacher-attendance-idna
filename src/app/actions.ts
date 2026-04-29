@@ -45,23 +45,12 @@ export async function submitAttendance(data: AttendanceData): Promise<{ success:
     timestamp,
   };
 
-  const postOptions = {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  };
-
   try {
-    // Apps Script redirects POST to a different URL — follow manually to keep POST method
-    let response = await fetch(webhookUrl, { ...postOptions, redirect: 'manual' });
-
-    if (response.status === 301 || response.status === 302) {
-      const redirectUrl = response.headers.get('location');
-      if (!redirectUrl) {
-        return { success: false, message: 'Redirect URL not found.' };
-      }
-      response = await fetch(redirectUrl, postOptions);
-    }
+    const response = await fetch(webhookUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -72,7 +61,7 @@ export async function submitAttendance(data: AttendanceData): Promise<{ success:
     const result = await response.json() as { success: boolean; error?: string };
     if (!result.success) {
       console.error('Apps Script error:', result.error);
-      return { success: false, message: `Error: ${result.error ?? 'Unknown error from Apps Script'}` };
+      return { success: false, message: `Apps Script error: ${result.error ?? 'Unknown error'}` };
     }
 
     return { success: true, message: 'Attendance submitted successfully!' };
