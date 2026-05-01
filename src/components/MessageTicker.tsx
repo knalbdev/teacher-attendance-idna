@@ -18,16 +18,18 @@ const MOODS = ['💪', '😊', '😴', '🤔', '🙏', '✨'];
 
 function MsgCard({ msg, className }: { msg: Message; className?: string }) {
   return (
-    <div className={`relative rounded-xl border border-slate-100 bg-slate-50/80 px-4 py-3 ${className ?? ''}`}>
-      {msg.mood && (
-        <span className="absolute -top-2.5 -right-2.5 text-lg bg-white rounded-full w-8 h-8 flex items-center justify-center shadow-sm border border-slate-100">
-          {msg.mood}
-        </span>
-      )}
-      <p className="text-sm text-slate-700 leading-relaxed line-clamp-3">
-        &ldquo;{msg.pesan}&rdquo;
-      </p>
-      <p className="text-xs text-slate-400 mt-2 font-medium truncate">— {msg.nama}</p>
+    <div className={`rounded-xl border border-slate-100 bg-slate-50/80 px-4 py-3 ${className ?? ''}`}>
+      <div className="flex items-start gap-2.5">
+        {msg.mood && (
+          <span className="text-2xl flex-shrink-0 leading-none mt-0.5">{msg.mood}</span>
+        )}
+        <div className="min-w-0">
+          <p className="text-sm text-slate-700 leading-relaxed line-clamp-3">
+            &ldquo;{msg.pesan}&rdquo;
+          </p>
+          <p className="text-xs text-slate-400 mt-1.5 font-medium truncate">— {msg.nama}</p>
+        </div>
+      </div>
     </div>
   );
 }
