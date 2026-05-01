@@ -2,19 +2,19 @@
 
 import { z } from 'zod';
 
-export async function getMessages(): Promise<Array<{ nama: string; pesan: string }>> {
+export async function getMessages(): Promise<Array<{ nama: string; pesan: string; mood?: string }>> {
   const url = process.env.APPS_SCRIPT_URL;
   if (!url) return [];
   try {
     const response = await fetch(url, { cache: 'no-store' });
-    const data = await response.json() as { success: boolean; messages?: Array<{ nama: string; pesan: string }> };
+    const data = await response.json() as { success: boolean; messages?: Array<{ nama: string; pesan: string; mood?: string }> };
     return data.success ? (data.messages ?? []) : [];
   } catch {
     return [];
   }
 }
 
-export async function submitMessage(nama: string, pesan: string): Promise<{ success: boolean; message: string }> {
+export async function submitMessage(nama: string, pesan: string, mood?: string): Promise<{ success: boolean; message: string }> {
   const url = process.env.APPS_SCRIPT_URL;
   if (!url) return { success: false, message: 'URL not configured.' };
 
@@ -25,7 +25,7 @@ export async function submitMessage(nama: string, pesan: string): Promise<{ succ
     const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ type: 'pesan', nama, pesan }),
+      body: JSON.stringify({ type: 'pesan', nama, pesan, ...(mood ? { mood } : {}) }),
       signal: controller.signal,
     });
     clearTimeout(timer);

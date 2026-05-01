@@ -8,6 +8,8 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { submitAttendance, submitMessage } from "@/app/actions";
+
+const MOODS = ['💪', '😊', '😴', '🤔', '🙏', '✨'];
 import { data, jpData, type Level } from "@/lib/data";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -72,6 +74,7 @@ export default function AttendanceForm() {
   const [dialogStep, setDialogStep] = useState<'prompt' | 'form'>('prompt');
   const [msgNama, setMsgNama] = useState('');
   const [msgPesan, setMsgPesan] = useState('');
+  const [msgMood, setMsgMood] = useState('');
   const [isSendingMsg, setIsSendingMsg] = useState(false);
 
   const { toast } = useToast();
@@ -202,6 +205,7 @@ export default function AttendanceForm() {
       setDialogStep('prompt');
       setMsgNama('');
       setMsgPesan('');
+      setMsgMood('');
       setShowDialog(true);
     } else {
       toast({
@@ -215,12 +219,13 @@ export default function AttendanceForm() {
   const handleSendMessage = async () => {
     if (!msgNama.trim() || !msgPesan.trim()) return;
     setIsSendingMsg(true);
-    const result = await submitMessage(msgNama.trim(), msgPesan.trim());
+    const result = await submitMessage(msgNama.trim(), msgPesan.trim(), msgMood || undefined);
     setIsSendingMsg(false);
     if (result.success) {
       setShowDialog(false);
       setMsgNama('');
       setMsgPesan('');
+      setMsgMood('');
       window.dispatchEvent(new CustomEvent('message-sent'));
       toast({ title: "Terkirim!", description: "Kata-kata semangatmu sudah terkirim!" });
     } else {
@@ -446,6 +451,23 @@ export default function AttendanceForm() {
                   <span className="absolute bottom-2 right-2 text-xs text-muted-foreground pointer-events-none">
                     {msgPesan.length}/200
                   </span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs text-slate-400">Mood:</span>
+                  {MOODS.map((emoji) => (
+                    <button
+                      key={emoji}
+                      type="button"
+                      onClick={() => setMsgMood(msgMood === emoji ? '' : emoji)}
+                      className={`text-xl p-1.5 rounded-lg transition-all ${
+                        msgMood === emoji
+                          ? 'bg-primary/10 ring-2 ring-primary/30 scale-110'
+                          : 'opacity-50 hover:opacity-100 hover:bg-muted'
+                      }`}
+                    >
+                      {emoji}
+                    </button>
+                  ))}
                 </div>
               </div>
               <DialogFooter>
