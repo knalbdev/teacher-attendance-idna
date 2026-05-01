@@ -30,7 +30,11 @@ export default function MessageTicker() {
   useEffect(() => {
     loadMessages();
     const refresh = setInterval(loadMessages, 30000);
-    return () => clearInterval(refresh);
+    window.addEventListener('message-sent', loadMessages);
+    return () => {
+      clearInterval(refresh);
+      window.removeEventListener('message-sent', loadMessages);
+    };
   }, [loadMessages]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -42,6 +46,7 @@ export default function MessageTicker() {
       setNama("");
       setPesan("");
       await loadMessages();
+      window.dispatchEvent(new CustomEvent('message-sent'));
       toast({ title: "Terkirim!", description: "Kata-kata semangatmu sudah terkirim." });
     } else {
       toast({ variant: "destructive", title: "Gagal", description: result.message });
@@ -58,17 +63,19 @@ export default function MessageTicker() {
     if (paused) setTimeout(() => setPaused(false), 1000);
   };
 
-  // Build duplicated track for seamless loop (-50% translateX)
+  // Build duplicated track for seamless loop (-50% translateX).
+  // Base must be wide enough to fill viewport; card width ~280px.
   const buildTrack = () => {
     if (messages.length === 0) return [];
-    const times = Math.ceil(8 / messages.length);
+    const minCards = Math.max(messages.length, Math.ceil(1200 / 280));
+    const times = Math.ceil(minCards / messages.length);
     const base = Array.from({ length: times }, () => messages).flat();
     return [...base, ...base];
   };
 
   const track = buildTrack();
   const baseLength = track.length / 2;
-  const animDuration = Math.max(baseLength * 5, 20);
+  const animDuration = Math.max(baseLength * 4, 18);
 
   return (
     <div className="w-full space-y-2">

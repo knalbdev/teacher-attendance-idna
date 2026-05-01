@@ -221,6 +221,7 @@ export default function AttendanceForm() {
       setShowDialog(false);
       setMsgNama('');
       setMsgPesan('');
+      window.dispatchEvent(new CustomEvent('message-sent'));
       toast({ title: "Terkirim!", description: "Kata-kata semangatmu sudah terkirim!" });
     } else {
       toast({ variant: "destructive", title: "Gagal", description: result.message });
