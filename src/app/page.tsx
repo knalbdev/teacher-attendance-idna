@@ -18,7 +18,7 @@ export default function Home() {
             </div>
             <div>
               <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-                Teacher Attendance System
+                Sistem Absensi Guru
               </h1>
               <p className="text-sm text-slate-500 mt-0.5">IDN Boarding School Akhwat</p>
             </div>

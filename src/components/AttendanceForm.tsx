@@ -2,15 +2,23 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Camera, Loader2, RefreshCw } from "lucide-react";
+import { Camera, CheckCircle2, Loader2, RefreshCw } from "lucide-react";
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-import { submitAttendance } from "@/app/actions";
+import { submitAttendance, submitMessage } from "@/app/actions";
 import { data, jpData, type Level } from "@/lib/data";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   Form,
   FormControl,
@@ -28,20 +36,21 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "./ui/input";
+import { Textarea } from "./ui/textarea";
 
 const formSchema = z.object({
-  level: z.string({ required_error: "This field is required." }).min(1, "This field is required."),
-  class: z.string({ required_error: "This field is required." }).min(1, "This field is required."),
-  teacher: z.string({ required_error: "This field is required." }).min(1, "This field is required."),
-  jp: z.string({ required_error: "This field is required." }).min(1, "This field is required."),
+  level: z.string({ required_error: "Kolom ini wajib diisi." }).min(1, "Kolom ini wajib diisi."),
+  class: z.string({ required_error: "Kolom ini wajib diisi." }).min(1, "Kolom ini wajib diisi."),
+  teacher: z.string({ required_error: "Kolom ini wajib diisi." }).min(1, "Kolom ini wajib diisi."),
+  jp: z.string({ required_error: "Kolom ini wajib diisi." }).min(1, "Kolom ini wajib diisi."),
   otherTeacher: z.string().optional(),
-  photo: z.string({ required_error: "A photo is required." }).min(1, "A photo is required."),
+  photo: z.string({ required_error: "Foto wajib diambil." }).min(1, "Foto wajib diambil."),
 }).superRefine((data, ctx) => {
     if (data.teacher === 'Other' && (!data.otherTeacher || data.otherTeacher.trim() === '')) {
         ctx.addIssue({
             code: z.ZodIssueCode.custom,
             path: ['otherTeacher'],
-            message: 'Teacher name must be filled if "Other" is selected.',
+            message: 'Nama guru wajib diisi jika memilih "Lainnya".',
         });
     }
 });
@@ -52,12 +61,18 @@ export default function AttendanceForm() {
   const [classOptions, setClassOptions] = useState<string[]>([]);
   const [teacherOptions, setTeacherOptions] = useState<string[]>([]);
   const [levelOptions, setLevelOptions] = useState<string[]>([]);
-  
+
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
   const [isCameraOn, setIsCameraOn] = useState(false);
   const [isCameraStarting, setIsCameraStarting] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  const [showDialog, setShowDialog] = useState(false);
+  const [dialogStep, setDialogStep] = useState<'prompt' | 'form'>('prompt');
+  const [msgNama, setMsgNama] = useState('');
+  const [msgPesan, setMsgPesan] = useState('');
+  const [isSendingMsg, setIsSendingMsg] = useState(false);
 
   const { toast } = useToast();
 
@@ -114,8 +129,8 @@ export default function AttendanceForm() {
         setHasCameraPermission(false);
         toast({
             variant: "destructive",
-            title: "Camera Error",
-            description: "Could not access camera. Please enable permissions in your browser.",
+            title: "Error Kamera",
+            description: "Tidak bisa mengakses kamera. Aktifkan izin kamera di browser.",
         });
         setIsCameraStarting(false);
     }
@@ -154,8 +169,8 @@ export default function AttendanceForm() {
     } else {
         toast({
           variant: "destructive",
-          title: "Camera Not Ready",
-          description: "The camera is not ready yet. Please wait a moment and try again.",
+          title: "Kamera Belum Siap",
+          description: "Kamera belum siap. Tunggu sebentar dan coba lagi.",
         });
     }
   };
@@ -182,36 +197,51 @@ export default function AttendanceForm() {
 
     const result = await submitAttendance(submissionData);
     if (result.success) {
-      toast({
-        title: "Success!",
-        description: result.message,
-      });
       form.reset();
       form.setValue("photo", "");
+      setDialogStep('prompt');
+      setMsgNama('');
+      setMsgPesan('');
+      setShowDialog(true);
     } else {
       toast({
         variant: "destructive",
-        title: "Submission Failed",
+        title: "Gagal Mengirim",
         description: result.message,
       });
     }
   }
 
+  const handleSendMessage = async () => {
+    if (!msgNama.trim() || !msgPesan.trim()) return;
+    setIsSendingMsg(true);
+    const result = await submitMessage(msgNama.trim(), msgPesan.trim());
+    setIsSendingMsg(false);
+    if (result.success) {
+      setShowDialog(false);
+      setMsgNama('');
+      setMsgPesan('');
+      toast({ title: "Terkirim!", description: "Kata-kata semangatmu sudah terkirim!" });
+    } else {
+      toast({ variant: "destructive", title: "Gagal", description: result.message });
+    }
+  };
+
   return (
     <>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 md:items-stretch">
                 <div className="space-y-4">
                     <FormField
                         control={form.control}
                         name="level"
                         render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Grade</FormLabel>
+                            <FormLabel>Jenjang</FormLabel>
                             <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl>
-                                <SelectTrigger><SelectValue placeholder="Select Grade" /></SelectTrigger>
+                                <SelectTrigger><SelectValue placeholder="Pilih Jenjang" /></SelectTrigger>
                             </FormControl>
                             <SelectContent>
                                 {levelOptions.map((option) => (
@@ -229,10 +259,10 @@ export default function AttendanceForm() {
                         name="class"
                         render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Class</FormLabel>
+                            <FormLabel>Kelas</FormLabel>
                             <Select onValueChange={field.onChange} value={field.value} disabled={!level}>
                             <FormControl>
-                                <SelectTrigger><SelectValue placeholder="Select Class" /></SelectTrigger>
+                                <SelectTrigger><SelectValue placeholder="Pilih Kelas" /></SelectTrigger>
                             </FormControl>
                             <SelectContent>
                                 {classOptions.map((option) => (
@@ -253,7 +283,7 @@ export default function AttendanceForm() {
                             <FormLabel>JP</FormLabel>
                             <Select onValueChange={field.onChange} value={field.value} disabled={!classValue}>
                             <FormControl>
-                                <SelectTrigger><SelectValue placeholder="Select JP" /></SelectTrigger>
+                                <SelectTrigger><SelectValue placeholder="Pilih JP" /></SelectTrigger>
                             </FormControl>
                             <SelectContent>
                                 {jpData.map((item) => (
@@ -273,7 +303,7 @@ export default function AttendanceForm() {
                         name="teacher"
                         render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Teacher's Name</FormLabel>
+                            <FormLabel>Nama Guru</FormLabel>
                             <Select onValueChange={(value) => {
                                 field.onChange(value);
                                 if (value !== 'Other') {
@@ -281,7 +311,7 @@ export default function AttendanceForm() {
                                 }
                             }} value={field.value} disabled={!jpValue}>
                             <FormControl>
-                                <SelectTrigger><SelectValue placeholder="Select Teacher's Name" /></SelectTrigger>
+                                <SelectTrigger><SelectValue placeholder="Pilih Nama Guru" /></SelectTrigger>
                             </FormControl>
                             <SelectContent>
                                 {teacherOptions.map((option) => (
@@ -300,9 +330,9 @@ export default function AttendanceForm() {
                             name="otherTeacher"
                             render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Other Teacher's Name</FormLabel>
+                                <FormLabel>Nama Guru Lainnya</FormLabel>
                                 <FormControl>
-                                    <Input placeholder="Enter teacher's name" {...field} />
+                                    <Input placeholder="Masukkan nama guru" {...field} />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -310,18 +340,19 @@ export default function AttendanceForm() {
                         />
                     )}
                 </div>
-                <div className="flex flex-col">
+
+                <div className="flex flex-col h-full">
                     <FormField
                         control={form.control}
                         name="photo"
                         render={() => (
                         <FormItem className="flex flex-col h-full">
-                            <FormLabel>Attendance Photo</FormLabel>
-                            <FormControl className="flex-grow">
-                                <div className="w-full p-2 border-dashed border-2 rounded-lg flex items-center justify-center bg-muted/50 aspect-video max-h-52 relative">
+                            <FormLabel>Foto Absensi</FormLabel>
+                            <FormControl className="flex-1 min-h-0">
+                                <div className="w-full h-full min-h-[200px] p-2 border-dashed border-2 rounded-lg flex items-center justify-center bg-muted/50 relative">
                                     {photo ? (
-                                        <div className="relative w-full aspect-video">
-                                            <img src={photo} alt="Attendance" className="rounded-md w-full h-full object-cover" />
+                                        <div className="relative w-full h-full">
+                                            <img src={photo} alt="Absensi" className="rounded-md w-full h-full object-cover" />
                                             <Button type="button" size="icon" variant="destructive" className="absolute -top-3 -right-3 rounded-full shadow-lg" onClick={retakePhoto}>
                                                 <RefreshCw className="h-4 w-4" />
                                             </Button>
@@ -331,19 +362,19 @@ export default function AttendanceForm() {
                                             <div className={`w-full h-full relative ${!isCameraOn ? 'hidden' : 'block'}`}>
                                                 <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover rounded-md" />
                                                 <Button type="button" onClick={capturePhoto} className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10">
-                                                    <Camera className="mr-2 h-4 w-4" /> Capture
+                                                    <Camera className="mr-2 h-4 w-4" /> Ambil Foto
                                                 </Button>
                                             </div>
                                             <div className={`absolute inset-0 flex flex-col gap-4 items-center justify-center ${isCameraOn ? 'hidden' : ''}`}>
                                                 <Button type="button" variant="outline" onClick={startCamera} disabled={isCameraStarting}>
                                                     {isCameraStarting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Camera className="mr-2 h-4 w-4" />}
-                                                    Enable Camera
+                                                    Aktifkan Kamera
                                                 </Button>
                                                 {hasCameraPermission === false && (
                                                     <Alert variant="destructive">
-                                                        <AlertTitle>Camera Access Denied</AlertTitle>
+                                                        <AlertTitle>Akses Kamera Ditolak</AlertTitle>
                                                         <AlertDescription>
-                                                            Please enable camera permissions in your browser settings.
+                                                            Aktifkan izin kamera di pengaturan browser.
                                                         </AlertDescription>
                                                     </Alert>
                                                 )}
@@ -362,11 +393,74 @@ export default function AttendanceForm() {
 
           <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
             {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Submit Attendance
+            Kirim Absensi
           </Button>
         </form>
       </Form>
+
+      <Dialog open={showDialog} onOpenChange={(open) => { if (!open) setShowDialog(false); }}>
+        <DialogContent className="sm:max-w-sm">
+          {dialogStep === 'prompt' ? (
+            <>
+              <DialogHeader>
+                <div className="mx-auto mb-2 flex h-14 w-14 items-center justify-center rounded-full bg-green-50 border border-green-100">
+                  <CheckCircle2 className="h-7 w-7 text-green-500" />
+                </div>
+                <DialogTitle className="text-center text-lg">Absensi Berhasil!</DialogTitle>
+                <DialogDescription className="text-center text-sm">
+                  Mau berbagi kata-kata semangat untuk rekan guru hari ini?
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter className="flex-col gap-2 sm:flex-col">
+                <Button onClick={() => setDialogStep('form')} className="w-full">
+                  Ya, mau!
+                </Button>
+                <Button variant="ghost" onClick={() => setShowDialog(false)} className="w-full text-muted-foreground">
+                  Nanti saja
+                </Button>
+              </DialogFooter>
+            </>
+          ) : (
+            <>
+              <DialogHeader>
+                <DialogTitle>Bagikan Semangatmu</DialogTitle>
+                <DialogDescription>Kata-katamu bisa menginspirasi rekan-rekan yang lain!</DialogDescription>
+              </DialogHeader>
+              <div className="space-y-3">
+                <Input
+                  placeholder="Nama kamu"
+                  value={msgNama}
+                  onChange={(e) => setMsgNama(e.target.value)}
+                  maxLength={50}
+                />
+                <div className="relative">
+                  <Textarea
+                    placeholder="Tulis kata-kata semangatmu..."
+                    value={msgPesan}
+                    onChange={(e) => setMsgPesan(e.target.value)}
+                    className="resize-none pr-14"
+                    maxLength={200}
+                    rows={3}
+                  />
+                  <span className="absolute bottom-2 right-2 text-xs text-muted-foreground pointer-events-none">
+                    {msgPesan.length}/200
+                  </span>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button
+                  disabled={isSendingMsg || !msgNama.trim() || !msgPesan.trim()}
+                  onClick={handleSendMessage}
+                  className="w-full"
+                >
+                  {isSendingMsg && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Kirim
+                </Button>
+              </DialogFooter>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
-    

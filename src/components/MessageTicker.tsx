@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Loader2, Send } from "lucide-react";
 import { getMessages, submitMessage } from "@/app/actions";
 import { Button } from "@/components/ui/button";
@@ -15,11 +15,11 @@ interface Message {
 
 export default function MessageTicker() {
   const [messages, setMessages] = useState<Message[]>([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [animState, setAnimState] = useState<"visible" | "exit" | "enter">("visible");
+  const [paused, setPaused] = useState(false);
   const [nama, setNama] = useState("");
   const [pesan, setPesan] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { toast } = useToast();
 
   const loadMessages = useCallback(async () => {
@@ -32,19 +32,6 @@ export default function MessageTicker() {
     const refresh = setInterval(loadMessages, 30000);
     return () => clearInterval(refresh);
   }, [loadMessages]);
-
-  useEffect(() => {
-    if (messages.length <= 1) return;
-    const cycle = setInterval(() => {
-      setAnimState("exit");
-      setTimeout(() => {
-        setCurrentIndex((prev) => (prev + 1) % messages.length);
-        setAnimState("enter");
-        setTimeout(() => setAnimState("visible"), 50);
-      }, 350);
-    }, 5000);
-    return () => clearInterval(cycle);
-  }, [messages.length]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,67 +49,77 @@ export default function MessageTicker() {
     setIsSubmitting(false);
   };
 
-  const animStyle: React.CSSProperties =
-    animState === "exit"
-      ? { opacity: 0, transform: "translateX(-24px)", transition: "all 0.35s ease" }
-      : animState === "enter"
-      ? { opacity: 0, transform: "translateX(24px)" }
-      : { opacity: 1, transform: "translateX(0)", transition: "all 0.4s ease" };
+  const handleTouchStart = () => {
+    longPressTimer.current = setTimeout(() => setPaused(true), 400);
+  };
 
-  const current = messages[currentIndex];
+  const handleTouchEnd = () => {
+    if (longPressTimer.current) clearTimeout(longPressTimer.current);
+    if (paused) setTimeout(() => setPaused(false), 1000);
+  };
+
+  // Build duplicated track for seamless loop (-50% translateX)
+  const buildTrack = () => {
+    if (messages.length === 0) return [];
+    const times = Math.ceil(8 / messages.length);
+    const base = Array.from({ length: times }, () => messages).flat();
+    return [...base, ...base];
+  };
+
+  const track = buildTrack();
+  const baseLength = track.length / 2;
+  const animDuration = Math.max(baseLength * 5, 20);
 
   return (
-    <div className="w-full max-w-4xl space-y-2">
-      <div
-        className="relative rounded-2xl border border-indigo-200/60 px-6 pt-4 flex flex-col items-center justify-center"
-        style={{
-          background: "linear-gradient(135deg, #eef2ff 0%, #e0e7ff 50%, #ede9fe 100%)",
-          paddingBottom: messages.length > 1 ? "2rem" : "1rem",
-          minHeight: "80px",
-        }}
-      >
-        {/* Decorative quote mark */}
-        <span
-          className="absolute top-2 left-4 text-7xl font-serif leading-none select-none pointer-events-none"
-          style={{ color: "rgba(99, 102, 241, 0.15)" }}
-        >
-          &ldquo;
-        </span>
-
-        {/* Message */}
-        <div className="text-center z-10 w-full" style={animStyle}>
-          {current ? (
-            <>
-              <p className="text-sm sm:text-base font-semibold text-slate-700 leading-relaxed break-words hyphens-auto">
-                &ldquo;{current.pesan}&rdquo;
-              </p>
-              <p className="text-sm text-indigo-400 font-medium mt-2">— {current.nama}</p>
-            </>
-          ) : (
-            <p className="text-sm text-slate-400 italic">
-              Belum ada pesan hari ini. Yuk bagikan semangatmu! 💪
-            </p>
-          )}
+    <div className="w-full space-y-2">
+      {messages.length === 0 ? (
+        <div className="rounded-2xl border border-slate-200 bg-white px-6 py-5 text-center">
+          <p className="text-sm text-slate-400 italic">
+            Belum ada pesan hari ini. Yuk bagikan semangatmu!
+          </p>
         </div>
+      ) : (
+        <div
+          className="overflow-hidden rounded-2xl border border-slate-200 bg-white py-4 cursor-default select-none"
+          onMouseEnter={() => setPaused(true)}
+          onMouseLeave={() => setPaused(false)}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+          onTouchCancel={handleTouchEnd}
+        >
+          {/* Fade edges */}
+          <div className="relative">
+            <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-12 z-10"
+              style={{ background: "linear-gradient(to right, white, transparent)" }} />
+            <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-12 z-10"
+              style={{ background: "linear-gradient(to left, white, transparent)" }} />
 
-        {/* Dot indicators */}
-        {messages.length > 1 && (
-          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 flex-wrap justify-center max-w-[80%]">
-            {messages.map((_, i) => (
-              <div
-                key={i}
-                className="h-1.5 rounded-full transition-all duration-300"
-                style={{
-                  width: i === currentIndex ? "20px" : "6px",
-                  background: i === currentIndex ? "#6366f1" : "#c7d2fe",
-                }}
-              />
-            ))}
+            <div
+              className="flex gap-3 px-3 w-max"
+              style={{
+                animation: `marquee ${animDuration}s linear infinite`,
+                animationPlayState: paused ? "paused" : "running",
+              }}
+            >
+              {track.map((msg, i) => (
+                <div
+                  key={i}
+                  className="flex-shrink-0 w-56 sm:w-64 rounded-xl border border-slate-100 bg-slate-50/80 px-4 py-3"
+                >
+                  <p className="text-sm text-slate-700 leading-relaxed line-clamp-3">
+                    &ldquo;{msg.pesan}&rdquo;
+                  </p>
+                  <p className="text-xs text-slate-400 mt-2 font-medium truncate">
+                    — {msg.nama}
+                  </p>
+                </div>
+              ))}
+            </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
-      {/* Form */}
+      {/* Submit form */}
       <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-2">
         <Input
           placeholder="Nama kamu"
